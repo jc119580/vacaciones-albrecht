@@ -99,10 +99,32 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-blue-200 mb-1">Filtrar por Mes Rol:</label>
+                            <select id="selectFiltroMesRol" onchange="filtrarPorMesRol()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                                <option value="TODOS">-- Todos los Meses --</option>
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Setiembre">Setiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-blue-200 mb-1">Nombre / Apellido:</label>
+                            <input type="text" id="txtFiltroNombre" placeholder="Buscar nombre..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-[11px] text-blue-200 mb-1">Filtrar por Nombre / Apellido:</label>
-                        <input type="text" id="txtFiltroNombre" placeholder="Escribe las primeras letras..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none mb-2">
-                        
                         <select id="selectTrabajador" class="w-full text-xs font-semibold rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none shadow">
                         </select>
                     </div>
@@ -248,7 +270,7 @@
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
-                        Programación y Fraccionamiento con Seleccionador de Fechas
+                        Programación, Fraccionamiento y Registro con Convenio
                     </h3>
 
                     <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
@@ -523,6 +545,8 @@
                     document.getElementById('boxAccionesAdmin').classList.remove('hidden');
                 }
 
+                // CARGAR TODOS LOS TRABAJADORES (TANTO PARA RRHH COMO PARA VISORES/JEFATURAS)
+                listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
                 if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
             }
@@ -539,9 +563,20 @@
             lista.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.id;
-                opt.innerText = `${t.nombre_completo} [DNI: ${t.dni || '-'}] [Planilla: ${t.planilla || '-'}]`;
+                opt.innerText = `${t.nombre_completo} [DNI: ${t.dni || '-'}] [Planilla: ${t.planilla || '-'}] [Rol: ${t.mes_rol || 'Octubre'}]`;
                 select.appendChild(opt);
             });
+        }
+
+        function filtrarPorMesRol() {
+            const mesElegido = document.getElementById('selectFiltroMesRol').value;
+            if (mesElegido === "TODOS") {
+                listaTrabajadores = TRABAJADORES_BASE;
+            } else {
+                listaTrabajadores = TRABAJADORES_BASE.filter(t => (t.mes_rol || "Octubre").toLowerCase() === mesElegido.toLowerCase());
+            }
+            renderDesplegable(listaTrabajadores);
+            if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
         }
 
         function cargarTrabajador(id) {
@@ -580,7 +615,7 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
-                // CLASIFICAR SI EL TRAMO ES GOZADO (PASADO) O PROGRAMADO (FUTURO)
+                // EVALUAR SI EL TRAMO ES FUTURO RESPECTO A HOY
                 let esFuturo = false;
                 if (k.detalle_fechas) {
                     const matchFin = k.detalle_fechas.match(/al (\d{1,2}\/\d{1,2}\/\d{4})/);
