@@ -234,7 +234,7 @@
                             <i class="fa-solid fa-calculator"></i> Auditoría de Domingos Normativos (Regla EsSalud)
                         </p>
                         <p id="lblExplicacionDomingos" class="text-amber-800 text-[11px]">
-                            Seleccione un servidor para auditar la relación entre días gozados y domingos contados.
+                            Seleccione un servidor para auditar la relación entre días computados y domingos contados.
                         </p>
                     </div>
                     <div class="bg-white p-3 rounded-lg border border-amber-300 text-center space-y-1">
@@ -308,7 +308,7 @@
                                 <tr class="bg-slate-100 text-slate-600 border-b">
                                     <th class="p-2 border">Año / Periodo</th>
                                     <th class="p-2 border">Derecho Base</th>
-                                    <th class="p-2 border">Días Gozados Totales</th>
+                                    <th class="p-2 border">Días Gozados / Programados</th>
                                     <th class="p-2 border">Historial Completo de Tramos / Fechas</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
                                     <th class="p-2 border">Acciones</th>
@@ -571,12 +571,28 @@
             let deudaAnteriores = 0;
             let adelanto2027 = 0;
 
+            const hoy = new Date(); // Septiembre 2026
+
             kardexData.forEach(k => {
                 if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
                 if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
                 if (k.periodo_ano === 2027) adelanto2027 = 30 - k.dias_pendientes;
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
+
+                // CLASIFICAR SI EL TRAMO ES GOZADO (PASADO) O PROGRAMADO (FUTURO)
+                let esFuturo = false;
+                if (k.detalle_fechas) {
+                    const matchFin = k.detalle_fechas.match(/al (\d{1,2}\/\d{1,2}\/\d{4})/);
+                    if (matchFin) {
+                        const fFinTramo = parseFechaLocal(matchFin[1]);
+                        if (fFinTramo && fFinTramo > hoy) esFuturo = true;
+                    }
+                }
+
+                const etiquetaEstado = esFuturo 
+                    ? `<span class="bg-purple-100 text-purple-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Programado (Futuro)</span>`
+                    : `<span class="bg-blue-100 text-blue-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Gozado (Efectivo)</span>`;
 
                 // CONTAR DOMINGOS EN EL HISTORIAL
                 let domingosEnHistorial = 0;
@@ -603,7 +619,10 @@
                 tr.innerHTML = `
                     <td class="p-2 border font-bold">${k.periodo_ano}</td>
                     <td class="p-2 border">30 Días</td>
-                    <td class="p-2 border font-bold text-blue-800">${diasGozadosTotales} Días</td>
+                    <td class="p-2 border font-bold text-blue-800">
+                        <div>${diasGozadosTotales} Días</div>
+                        <div class="mt-0.5">${etiquetaEstado}</div>
+                    </td>
                     <td class="p-2 border text-slate-700">
                         <div>${k.detalle_fechas || 'Sin registro'}</div>
                         ${alertaDomingoHTML}
@@ -678,7 +697,6 @@
             let tramos = k.detalle_fechas.split(" | ");
             tramos.splice(indexTramo, 1);
 
-            // RECALCULAR DÍAS RESTANTES DE TODOS LOS TRAMOS SOBRANTES
             let totalDiasGozadosNuevos = 0;
             tramos.forEach(t => {
                 const m = t.match(/\((\d+) días/);
@@ -755,10 +773,9 @@
                 document.getElementById('lblDomingosFaltantes').className = "text-[10px] font-bold text-emerald-700";
             }
 
-            document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días gozados.`;
+            document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días computados.`;
         }
 
-        // CONVERSIÓN DE FECHA A OBJETO DATE SIN DESFASE
         function parseFechaLocal(strFecha) {
             const partes = strFecha.split('/');
             if (partes.length === 3) {
@@ -778,7 +795,6 @@
             const d1 = new Date(fIniVal + 'T00:00:00');
             const d2 = new Date(fFinVal + 'T00:00:00');
 
-            // 1. VALIDAR CRONOLOGÍA INVERSA
             if (d2 < d1) {
                 alert("🚨 FECHAS INVÁLIDAS:\nLa Fecha Fin del tramo no puede ser menor a la Fecha Inicio.");
                 document.getElementById('fechaFin').value = '';
@@ -787,7 +803,7 @@
                 return;
             }
 
-            // 2. VALIDAR SOLAPAMIENTO CON TRAMOS ANTERIORES DEL TRABAJADOR
+            // VALIDAR SOLAPAMIENTO CON TRAMOS ANTERIORES DEL TRABAJADOR
             let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
             let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
 
@@ -800,7 +816,6 @@
                         const existFin = parseFechaLocal(matchFechas[2]);
 
                         if (existIni && existFin) {
-                            // CRUCE DE RANGOS
                             if ((d1 >= existIni && d1 <= existFin) || (d2 >= existIni && d2 <= existFin) || (d1 <= existIni && d2 >= existFin)) {
                                 alert(`🚨 CRUCE DE FECHAS DETECTADO:\nEl rango seleccionado (${d1.toLocaleDateString('es-PE')} al ${d2.toLocaleDateString('es-PE')}) se superpone con un tramo ya registrado:\n"${tramo}"\n\nPor favor, elija un rango de fechas libre.`);
                                 document.getElementById('fechaInicio').value = '';
@@ -850,7 +865,7 @@
             document.getElementById('kardexFechasDetalle').value = historialTexto;
         }
 
-        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO (CON CONFIRMACIÓN DE SEGURIDAD)
+        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO
         function eliminarTramoAno(ano) {
             if (!trabajadorActual) return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
@@ -868,7 +883,7 @@
             }
         }
 
-        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES (CON CONFIRMACIÓN DE SEGURIDAD)
+        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES
         function reiniciarPeriodo(ano) {
             if (!trabajadorActual) return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
@@ -902,7 +917,6 @@
 
             const ano = parseInt(document.getElementById('kardexAno').value);
 
-            // VERIFICACIÓN ADICIONAL DE SEGURIDAD PARA ADELANTOS
             if (ano === 2027) {
                 const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
                 let pend2026 = 30;
@@ -1039,7 +1053,7 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // ELIMINAR SERVIDOR COMPLETO CON CONFIRMACIÓN DOBLE
+        // ELIMINAR SERVIDOR COMPLETO
         async function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
             const confirmacion1 = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}] de la base de datos?`);
