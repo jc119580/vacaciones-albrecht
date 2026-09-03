@@ -208,7 +208,7 @@
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
-                        Programación, Fraccionamiento y Registro con Calendario
+                        Programación, Fraccionamiento y Auditoría de Domingos
                     </h3>
 
                     <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
@@ -250,7 +250,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-slate-600 mb-1 font-semibold">Detalle del Tramo a Agregar / Resolución:</label>
+                            <label class="block text-slate-600 mb-1 font-semibold">Detalle del Tramo / Historial de Fechas:</label>
                             <input type="text" id="kardexFechasDetalle" placeholder="Ej. Del 21/09/2026 al 27/09/2026 (7 días - Incluye 1 domingos)" class="w-full border rounded p-2 bg-white outline-none">
                         </div>
 
@@ -261,7 +261,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO -->
+                    <!-- TABLA KARDEX AUDITADO CON BOTOES COMPLETOS (EDITAR / ELIMINAR / REINICIAR) -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -737,7 +737,7 @@
 
             if (!KARDEX_MEMORIA[trabajadorActual.id]) {
                 KARDEX_MEMORIA[trabajadorActual.id] = [
-                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
+                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026", domingos_acumulados: 0 }
                 ];
                 guardarStorage();
             }
@@ -757,17 +757,45 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
+                // CONTAR DOMINGOS EN EL TEXTO DEL HISTORIAL
+                let domingosEnHistorial = 0;
+                const matches = (k.detalle_fechas || "").match(/Incluye (\d+) domingos?/g);
+                if (matches) {
+                    matches.forEach(m => {
+                        const num = parseInt(m.replace(/\D/g, ''));
+                        if (!isNaN(num)) domingosEnHistorial += num;
+                    });
+                }
+
+                // REGLA DE AUDITORÍA DE ESSALUD:
+                // Si gozó 21 o más días, exige al menos 3 domingos. Si gozó 30 días, exige 4 domingos.
+                let alertaDomingoHTML = "";
+                if (diasGozadosTotales >= 21 && diasGozadosTotales < 30 && domingosEnHistorial < 3) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 21 días gozados se requiere mínimo 3 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/3)</span>`;
+                } else if (diasGozadosTotales === 30 && domingosEnHistorial < 4) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 30 días gozados se requiere 4 domingos">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-slate-50";
                 tr.innerHTML = `
                     <td class="p-2 border font-bold">${k.periodo_ano}</td>
                     <td class="p-2 border">30 Días</td>
                     <td class="p-2 border font-bold text-blue-800">${diasGozadosTotales} Días</td>
-                    <td class="p-2 border text-slate-700">${k.detalle_fechas || 'Sin registro'}</td>
+                    <td class="p-2 border text-slate-700">
+                        <div>${k.detalle_fechas || 'Sin registro'}</div>
+                        ${alertaDomingoHTML}
+                    </td>
                     <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
                     <td class="p-2 border">
                         <div class="flex items-center gap-1.5">
-                            <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Reiniciar este año">
+                            <button onclick="editarTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Editar historial de este año">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
+                            </button>
+                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar todo el registro de este año">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                            <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold text-[10px]" title="Limpiar y volver a 30 días libres">
                                 <i class="fa-solid fa-rotate-left"></i> Limpiar
                             </button>
                         </div>
@@ -782,7 +810,7 @@
             document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
         }
 
-        // CÁLCULO DE DÍAS Y DOMINGOS EN TIEMPO REAL AL ELEGIR FECHAS
+        // CÁLCULO DE DÍAS Y DOMINGOS EN TIEMPO REAL AL ELEGIR FECHAS EN EL CALENDARIO
         function calcularDiasFechas() {
             const fIni = document.getElementById('fechaInicio').value;
             const fFin = document.getElementById('fechaFin').value;
@@ -815,27 +843,75 @@
             const fFinFormatted = d2.toLocaleDateString('es-PE');
             const textoNuevoTramo = `Del ${fIniFormatted} al ${fFinFormatted} (${diasTramoActual} días - Incluye ${domingos} domingos)`;
 
-            // CALCULAR ACUMULACIÓN DE DÍAS GOZADOS PREVIOS EN ESE PERIODO
+            // OBTENER HISTORIAL GUARDADO PREVIAMENTE EN ESE PERIODO
             let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
             let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
             let diasGozadosPrevios = regPrevio ? (30 - regPrevio.dias_pendientes) : 0;
 
             let nuevoTotalGozados = diasGozadosPrevios + diasTramoActual;
             if (nuevoTotalGozados > 30) {
-                alert(`¡Atención! Este tramo de ${diasTramoActual} días supera el límite de 30 días base del periodo ${ano}.`);
+                alert(`¡Atención! Este tramo de ${diasTramoActual} días supera el máximo de 30 días del periodo ${ano}.`);
             }
 
             let nuevoSaldoRestante = 30 - nuevoTotalGozados;
             document.getElementById('kardexDiasPendientes').value = nuevoSaldoRestante >= 0 ? nuevoSaldoRestante : 0;
 
-            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026"
+            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026" && regPrevio.detalle_fechas !== "Sin registros gozados"
                 ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
                 : textoNuevoTramo;
 
             document.getElementById('kardexFechasDetalle').value = historialTexto;
         }
 
-        // GUARDAR Y ACUMULAR FRACCIONAMIENTOS
+        // EDITAR DIRECTAMENTE EL HISTORIAL DE UN PERIODO
+        function editarTramoAno(ano) {
+            if (!trabajadorActual) return;
+            const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === ano);
+            if (k) {
+                document.getElementById('kardexAno').value = ano;
+                document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
+                document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || '';
+                document.getElementById('lblDiasCalculados').innerText = `${30 - k.dias_pendientes} Días`;
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+            }
+        }
+
+        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO
+        function eliminarTramoAno(ano) {
+            if (!trabajadorActual) return;
+            if (confirm(`¿Está seguro de ELIMINAR por completo el registro del periodo ${ano}?`)) {
+                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
+                guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
+                alert(`Periodo ${ano} eliminado con éxito.`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES
+        function reiniciarPeriodo(ano) {
+            if (!trabajadorActual) return;
+            if (confirm(`¿Está seguro de limpiar y reiniciar el periodo ${ano} para restaurarlo a 30 días libres?`)) {
+                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
+                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados" });
+                guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
+                alert(`Periodo ${ano} restaurado a 30 días de saldo.`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        // GUARDAR / ACUMULACIÓN DE TRAMO DE VACACIONES
         async function guardarTramoAno(e) {
             e.preventDefault();
             if (!trabajadorActual) return;
@@ -867,7 +943,7 @@
                 })
             }).catch(e => console.error("Sincronización diferida"));
 
-            alert(`¡Tramo de vacaciones para el periodo ${ano} acumulado y guardado con éxito!`);
+            alert(`¡Kardex del periodo ${ano} acumulado y actualizado con éxito!`);
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -875,25 +951,7 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // REINICIAR PERIODO ESPECÍFICO (VOLVER A 30 DÍAS)
-        function reiniciarPeriodo(ano) {
-            if (!trabajadorActual) return;
-            if (confirm(`¿Está seguro de limpiar y reiniciar el periodo ${ano} para volver a 30 días libres?`)) {
-                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
-                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados" });
-                guardarStorage();
-
-                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
-                    method: "DELETE",
-                    headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
-
-                alert(`Periodo ${ano} limpiado y restaurado a 30 días.`);
-                cargarTrabajador(trabajadorActual.id);
-            }
-        }
-
-        // AGREGAR NUEVO SERVIDOR
+        // REGISTRAR NUEVO SERVIDOR
         async function guardarNuevoTrabajador(e) {
             e.preventDefault();
             const nuevo = {
@@ -998,7 +1056,7 @@
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES
+        // BUSCADORES EN TIEMPO REAL
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) return renderDesplegable(TRABAJADORES_BASE);
