@@ -160,7 +160,7 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO AGREGAR PERSONAL -->
+                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -266,7 +266,7 @@
                     </div>
                 </div>
 
-                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO -->
+                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO (SOLO RRHH) -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
@@ -323,7 +323,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO -->
+                    <!-- TABLA KARDEX AUDITADO CON CONTROL DE PERMISOS -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -333,7 +333,7 @@
                                     <th class="p-2 border">Días Computados (Gozados / Programados)</th>
                                     <th class="p-2 border">Historial Completo Cronológico de Tramos / Fechas</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
-                                    <th class="p-2 border">Acciones</th>
+                                    <th id="thAccionesKardex" class="p-2 border">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyKardex">
@@ -431,7 +431,7 @@
             </div>
             
             <div class="space-y-3">
-                <p class="text-slate-600">A continuación se muestran los tramos registrados para este año. Puede borrar un tramo específico si hubo un error en las fechas:</p>
+                <p id="lblExplicacionModalTramo" class="text-slate-600">A continuación se muestran los tramos registrados para este año:</p>
                 
                 <div id="contenedorTramosLista" class="space-y-2 max-h-60 overflow-y-auto pr-1">
                 </div>
@@ -539,10 +539,12 @@
                     document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
                     document.getElementById('formKardexAno').classList.add('hidden');
                     document.getElementById('boxAccionesAdmin').classList.add('hidden');
+                    document.getElementById('thAccionesKardex').innerText = "Estado";
                 } else {
                     document.getElementById('moduloRegistrarPersonal').classList.remove('hidden');
                     document.getElementById('formKardexAno').classList.remove('hidden');
                     document.getElementById('boxAccionesAdmin').classList.remove('hidden');
+                    document.getElementById('thAccionesKardex').innerText = "Acciones";
                 }
 
                 listaTrabajadores = TRABAJADORES_BASE;
@@ -714,6 +716,26 @@
                     alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
                 }
 
+                // MOSTRAR BOTONES SOLO A RRHH (ADMINISTRADOR)
+                let celdaAccionesHTML = "";
+                if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
+                    celdaAccionesHTML = `
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="abrirModalTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Gestionar tramos de este año">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Tramos
+                            </button>
+                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar este año por completo">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                            <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold text-[10px]" title="Limpiar y volver a 30 días libres">
+                                <i class="fa-solid fa-rotate-left"></i> Limpiar
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    celdaAccionesHTML = `<span class="text-slate-400 font-semibold italic text-[11px]">Solo Consulta</span>`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-slate-50";
                 tr.innerHTML = `
@@ -729,17 +751,7 @@
                     </td>
                     <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
                     <td class="p-2 border">
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="abrirModalTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Gestionar tramos de este año">
-                                <i class="fa-solid fa-pen-to-square"></i> Editar Tramos
-                            </button>
-                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar este año por completo">
-                                <i class="fa-solid fa-trash"></i> Eliminar
-                            </button>
-                            <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold text-[10px]" title="Limpiar y volver a 30 días libres">
-                                <i class="fa-solid fa-rotate-left"></i> Limpiar
-                            </button>
-                        </div>
+                        ${celdaAccionesHTML}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -753,9 +765,11 @@
             sincronizarFormularioConTabla();
         }
 
-        // ABRIR MODAL PARA GESTIONAR O BORRAR TRAMOS INDIVIDUALES
+        // ABRIR MODAL PARA GESTIONAR O BORRAR TRAMOS INDIVIDUALES (SOLO RRHH)
         function abrirModalTramoAno(ano) {
             if (!trabajadorActual) return;
+            if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
             anoEdicionModal = ano;
             document.getElementById('lblAnoModalTramo').innerText = ano;
             const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === ano);
@@ -789,7 +803,7 @@
 
         // BORRAR UN TRAMO ESPECÍFICO DEL HISTORIAL Y RECALCULAR SALDO EXACTO
         function borrarTramoEspecifico(indexTramo) {
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === anoEdicionModal);
             if (!k) return;
 
@@ -956,9 +970,9 @@
             document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
         }
 
-        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO
+        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO (SOLO RRHH)
         function eliminarTramoAno(ano) {
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
             if (confirmacion) {
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
@@ -974,9 +988,9 @@
             }
         }
 
-        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES
+        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES (SOLO RRHH)
         function reiniciarPeriodo(ano) {
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
             if (confirmacion) {
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
@@ -993,10 +1007,10 @@
             }
         }
 
-        // GUARDAR / ACUMULACIÓN DE TRAMO DE VACACIONES
+        // GUARDAR / ACUMULACIÓN DE TRAMO DE VACACIONES (SOLO RRHH)
         async function guardarTramoAno(e) {
             e.preventDefault();
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
 
             const fIni = document.getElementById('fechaInicio').value;
             const fFin = document.getElementById('fechaFin').value;
@@ -1056,9 +1070,11 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // REGISTRAR NUEVO SERVIDOR
+        // REGISTRAR NUEVO SERVIDOR (SOLO RRHH)
         async function guardarNuevoTrabajador(e) {
             e.preventDefault();
+            if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
             const nuevo = {
                 id: Date.now(),
                 nombre_completo: document.getElementById('regNombre').value.trim().toUpperCase(),
@@ -1093,9 +1109,9 @@
             cargarTrabajador(nuevo.id);
         }
 
-        // EDITAR DATOS DEL SERVIDOR
+        // EDITAR DATOS DEL SERVIDOR (SOLO RRHH)
         function abrirModalEditarTrabajador() {
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
             document.getElementById('editDni').value = trabajadorActual.dni;
             document.getElementById('editPlanilla').value = trabajadorActual.planilla;
@@ -1112,7 +1128,7 @@
 
         async function guardarEdicionTrabajador(e) {
             e.preventDefault();
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
 
             trabajadorActual.nombre_completo = document.getElementById('editNombre').value.trim().toUpperCase();
             trabajadorActual.dni = document.getElementById('editDni').value.trim();
@@ -1144,9 +1160,9 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // ELIMINAR SERVIDOR COMPLETO
+        // ELIMINAR SERVIDOR COMPLETO (SOLO RRHH)
         async function eliminarTrabajadorActual() {
-            if (!trabajadorActual) return;
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion1 = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}] de la base de datos?`);
             if (confirmacion1) {
                 const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción BORRARÁ todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
