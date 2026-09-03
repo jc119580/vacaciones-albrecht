@@ -124,7 +124,7 @@
                         <div><p class="text-slate-500">Servicio:</p><p id="lblServicio" class="font-semibold text-slate-700">-</p></div>
                     </div>
 
-                    <!-- BOTONES DE EDICIÓN Y ELIMINACIÓN (SOLO PARA RRHH) -->
+                    <!-- BOTONES DE EDICIÓN Y ELIMINACIÓN -->
                     <div id="boxAccionesAdmin" class="hidden pt-3 border-t flex justify-between items-center">
                         <button onclick="abrirModalEditarTrabajador()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1">
                             <i class="fa-solid fa-user-pen"></i> Editar Datos
@@ -135,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
+                <!-- MÓDULO AGREGAR PERSONAL -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -205,39 +205,64 @@
                     </div>
                 </div>
 
-                <!-- KARDEX Y CONFIGURACIÓN DE VACACIONES -->
+                <!-- REGISTRO CON CALENDARIO Y REGLA DE DOMINGOS -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-blue-600"></i>
-                        Kardex Vacacional Auditado por Años
+                        <i class="fa-solid fa-calendar-days text-blue-600"></i>
+                        Programación de Vacaciones con Calendario
                     </h3>
 
-                    <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-3 rounded-lg border grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                    <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-slate-600 mb-1 font-semibold">Año / Periodo Vacacional:</label>
+                                <select id="kardexAno" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026" selected>2026</option>
+                                    <option value="2027">2027 (Adelantadas)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-1 font-semibold">Fecha Inicio (Calendario):</label>
+                                <input type="date" id="fechaInicio" onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-1 font-semibold">Fecha Fin (Calendario):</label>
+                                <input type="date" id="fechaFin" onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50 p-2.5 rounded border border-blue-200 items-center">
+                            <div>
+                                <p class="text-[11px] text-blue-800 font-semibold">Días Solicitados:</p>
+                                <p id="lblDiasCalculados" class="text-base font-bold text-blue-900">0 Días</p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-blue-800 font-semibold">Domingos Incluidos:</p>
+                                <p id="lblDomingosContados" class="text-base font-bold text-blue-900">0 Domingos</p>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-600 mb-0.5 font-semibold">Días Pendientes Restantes:</label>
+                                <input type="number" id="kardexDiasPendientes" min="0" max="30" value="30" required class="w-full border rounded p-1.5 bg-white font-bold outline-none text-emerald-700">
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-slate-600 mb-1 font-semibold">Año / Periodo:</label>
-                            <select id="kardexAno" class="w-full border rounded p-1.5 bg-white outline-none">
-                                <option value="2022">2022</option>
-                                <option value="2023">2023</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026" selected>2026</option>
-                            </select>
+                            <label class="block text-slate-600 mb-1 font-semibold">Detalle de Fechas / Resolución N°:</label>
+                            <input type="text" id="kardexFechasDetalle" placeholder="Ej. Del 01/03/2026 al 30/03/2026 (Incluye 4 domingos - 30 días)" class="w-full border rounded p-2 bg-white outline-none">
                         </div>
-                        <div>
-                            <label class="block text-slate-600 mb-1 font-semibold">Días Pendientes:</label>
-                            <input type="number" id="kardexDiasPendientes" min="0" max="30" value="30" required class="w-full border rounded p-1.5 bg-white outline-none font-bold">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-slate-600 mb-1 font-semibold">Detalle Fechas / Meses Gozados:</label>
-                            <input type="text" id="kardexFechasDetalle" placeholder="Ej. 01/03/2025 al 30/03/2025 (30 días)" class="w-full border rounded p-1.5 bg-white outline-none">
-                        </div>
-                        <div class="md:col-span-4 text-right">
-                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-1.5 rounded shadow text-xs">
-                                <i class="fa-solid fa-pen-to-square"></i> Modificar / Registrar Año en Kardex
+
+                        <div class="text-right">
+                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded shadow text-xs transition-colors">
+                                <i class="fa-solid fa-floppy-disk"></i> Modificar / Registrar Año en Kardex
                             </button>
                         </div>
                     </form>
 
+                    <!-- TABLA KARDEX AUDITADO -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -261,7 +286,7 @@
         </main>
     </div>
 
-    <!-- MODAL PARA EDITAR DATOS DEL SERVIDOR -->
+    <!-- MODAL EDITAR SERVIDOR -->
     <div id="modalEditarTrabajador" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
             <div class="flex justify-between items-center border-b pb-2">
@@ -313,8 +338,11 @@
         </div>
     </div>
 
-    <!-- BASE DE DATOS Y LÓGICA INTEGRA -->
+    <!-- CONEXIÓN NUBE Y SISTEMA AUTÓNOMO -->
     <script>
+        const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
+        const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
+
         const USUARIOS_SISTEMA = [
             { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
             { id: 2, username: "ENFERMERIA", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Enfermería", rol: "VISOR", cargo_jefatura: "Departamento de Enfermería" },
@@ -324,7 +352,6 @@
             { id: 6, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
         ];
 
-        // DATO MAESTRO DE 272 SERVIDORES
         const MAESTRO_INICIAL = [
             {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
             {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
@@ -600,7 +627,6 @@
             {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL"}
         ];
 
-        // GESTIÓN DE PERSISTENCIA
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
         let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
 
@@ -612,6 +638,15 @@
         let usuarioSesion = null;
         let listaTrabajadores = TRABAJADORES_BASE;
         let trabajadorActual = null;
+
+        function getHeaders() {
+            return {
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            };
+        }
 
         function togglePasswordVisibility() {
             const pwdInput = document.getElementById('loginPassword');
@@ -627,13 +662,27 @@
             }
         }
 
-        function iniciarSesion(e) {
+        async function iniciarSesion(e) {
             e.preventDefault();
             document.getElementById('errorLogin').classList.add('hidden');
             const usr = document.getElementById('loginUsuario').value.trim().toUpperCase();
             const pwd = document.getElementById('loginPassword').value.trim();
 
-            const usuarioValido = USUARIOS_SISTEMA.find(u => u.username === usr && u.password_hash === pwd);
+            let usuarioValido = null;
+
+            try {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/usuarios?username=eq.${usr}&password_hash=eq.${pwd}`, {
+                    headers: getHeaders()
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.length > 0) usuarioValido = data[0];
+                }
+            } catch (err) {}
+
+            if (!usuarioValido) {
+                usuarioValido = USUARIOS_SISTEMA.find(u => u.username === usr && u.password_hash === pwd);
+            }
 
             if (!usuarioValido) {
                 document.getElementById('errorLogin').classList.remove('hidden');
@@ -700,10 +749,12 @@
 
             let saldo2026 = 30;
             let deudaAnteriores = 0;
+            let adelanto2027 = 0;
 
             kardexData.forEach(k => {
                 if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
                 if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
+                if (k.periodo_ano === 2027) adelanto2027 = 30 - k.dias_pendientes;
 
                 const tr = document.createElement('tr');
                 tr.className = "border-b";
@@ -721,11 +772,47 @@
             document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
             document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
             document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
-            document.getElementById('lblAdelanto2027').innerText = `0 Días`;
+            document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
         }
 
-        // AGREGAR TRABAJADOR
-        function guardarNuevoTrabajador(e) {
+        // CÁLCULO DE DÍAS Y DOMINGOS CON FECHAS (CALENDARIO)
+        function calcularDiasFechas() {
+            const fIni = document.getElementById('fechaInicio').value;
+            const fFin = document.getElementById('fechaFin').value;
+
+            if (!fIni || !fFin) return;
+
+            const d1 = new Date(fIni + 'T00:00:00');
+            const d2 = new Date(fFin + 'T00:00:00');
+
+            if (d2 < d1) {
+                alert("La fecha final no puede ser anterior a la fecha inicial.");
+                return;
+            }
+
+            let diffTime = Math.abs(d2 - d1);
+            let totalDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            let domingos = 0;
+            let tempDate = new Date(d1);
+            while (tempDate <= d2) {
+                if (tempDate.getDay() === 0) domingos++;
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+
+            document.getElementById('lblDiasCalculados').innerText = `${totalDias} Días`;
+            document.getElementById('lblDomingosContados').innerText = `${domingos} Domingo(s)`;
+
+            const fIniFormatted = d1.toLocaleDateString('es-PE');
+            const fFinFormatted = d2.toLocaleDateString('es-PE');
+            document.getElementById('kardexFechasDetalle').value = `Del ${fIniFormatted} al ${fFinFormatted} (${totalDias} días - Incluye ${domingos} domingos)`;
+
+            const saldoActual = 30 - totalDias;
+            document.getElementById('kardexDiasPendientes').value = saldoActual >= 0 ? saldoActual : 0;
+        }
+
+        // REGISTRAR NUEVO SERVIDOR
+        async function guardarNuevoTrabajador(e) {
             e.preventDefault();
             const nuevo = {
                 id: Date.now(),
@@ -739,13 +826,28 @@
 
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
-            alert(`¡Trabajador ${nuevo.nombre_completo} registrado en el sistema!`);
+
+            // SINCRONIZAR NUBE
+            fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    nombre_completo: nuevo.nombre_completo,
+                    dni: nuevo.dni,
+                    planilla: nuevo.planilla,
+                    regimen: nuevo.regimen,
+                    servicio: nuevo.servicio,
+                    cargo: nuevo.cargo
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
         }
 
-        // MODIFICAR DATOS DEL SERVIDOR
+        // EDITAR TRABAJADOR
         function abrirModalEditarTrabajador() {
             if (!trabajadorActual) return;
             document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
@@ -761,7 +863,7 @@
             document.getElementById('modalEditarTrabajador').classList.add('hidden');
         }
 
-        function guardarEdicionTrabajador(e) {
+        async function guardarEdicionTrabajador(e) {
             e.preventDefault();
             if (!trabajadorActual) return;
 
@@ -774,13 +876,28 @@
 
             guardarStorage();
             cerrarModalEditar();
+
+            // SINCRONIZAR CON LA NUBE
+            fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                method: "PATCH",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    nombre_completo: trabajadorActual.nombre_completo,
+                    dni: trabajadorActual.dni,
+                    planilla: trabajadorActual.planilla,
+                    regimen: trabajadorActual.regimen,
+                    servicio: trabajadorActual.servicio,
+                    cargo: trabajadorActual.cargo
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
             alert("¡Datos del servidor actualizados con éxito!");
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // MODIFICAR VACACIONES (KARDEX)
-        function guardarTramoAno(e) {
+        // GUARDAR KARDEX VACACIONAL
+        async function guardarTramoAno(e) {
             e.preventDefault();
             if (!trabajadorActual) return;
 
@@ -798,17 +915,37 @@
             }
 
             guardarStorage();
-            alert(`¡Kardex del periodo ${ano} actualizado con éxito!`);
+
+            // SINCRONIZAR CON LA NUBE
+            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: { ...getHeaders(), "Prefer": "resolution=merge-duplicates" },
+                body: JSON.stringify({
+                    trabajador_id: trabajadorActual.id,
+                    periodo_ano: ano,
+                    dias_pendientes: pend,
+                    detalle_fechas: det,
+                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert(`¡Kardex vacacional del periodo ${ano} actualizado con éxito!`);
             cargarTrabajador(trabajadorActual.id);
         }
 
         // ELIMINAR TRABAJADOR
-        function eliminarTrabajadorActual() {
+        async function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
             if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} del sistema?`)) {
                 TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
                 delete KARDEX_MEMORIA[trabajadorActual.id];
                 guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
                 listaTrabajadores = TRABAJADORES_BASE;
                 alert("Trabajador eliminado con éxito.");
                 renderDesplegable(listaTrabajadores);
