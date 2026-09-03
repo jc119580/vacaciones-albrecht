@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión de Vacaciones - Hospital II Albrecht</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-slate-100 font-sans text-slate-800">
@@ -258,17 +257,11 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN CON SUPABASE CLIENTE UNIVERSAL -->
+    <!-- CONEXIÓN DIRECTA NATIVA A SUPABASE (SIN DEPENDENCIAS DE LIBRERÍAS EXTERNAS) -->
     <script>
-        const SUPABASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
-
-        let _supabase;
-        try {
-            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch (e) {
-            console.error("Error inicializando Supabase Client");
-        }
+        const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
+        // REEMPLAZAR ESTA CLAVE SI COPIAS LA ANON KEY CLÁSICA DE SUPABASE (CONFIGURACIÓN -> API -> anon public)
+        const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
 
         const USUARIOS_LOCALES = [
             { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
@@ -282,6 +275,15 @@
         let usuarioSesion = null;
         let listaTrabajadores = [];
         let trabajadorActual = null;
+
+        function getHeaders() {
+            return {
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            };
+        }
 
         function togglePasswordVisibility() {
             const pwdInput = document.getElementById('loginPassword');
@@ -305,17 +307,15 @@
 
             let usuarioValido = null;
 
-            if (_supabase) {
-                try {
-                    const { data } = await _supabase
-                        .from('usuarios')
-                        .select('*')
-                        .eq('username', usr)
-                        .eq('password_hash', pwd);
-                    
+            try {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/usuarios?username=eq.${usr}&password_hash=eq.${pwd}`, {
+                    headers: getHeaders()
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
                     if (data && data.length > 0) usuarioValido = data[0];
-                } catch (err) {}
-            }
+                }
+            } catch (err) {}
 
             if (!usuarioValido) {
                 usuarioValido = USUARIOS_LOCALES.find(u => u.username === usr && u.password_hash === pwd);
@@ -350,20 +350,18 @@
         }
 
         async function cargarTrabajadoresDesdeNube() {
-            if (!_supabase) return;
             try {
-                const { data, error } = await _supabase
-                    .from('trabajadores')
-                    .select('*')
-                    .order('nombre_completo', { ascending: true });
-
-                if (!error && data) {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&order=nombre_completo.asc`, {
+                    headers: getHeaders()
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
                     listaTrabajadores = data;
                     renderDesplegable(listaTrabajadores);
                     if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
                 }
             } catch(e) {
-                console.error("Error al obtener la lista de trabajadores");
+                console.error("Error al cargar trabajadores");
             }
         }
 
@@ -390,10 +388,13 @@
             document.getElementById('lblServicio').innerText = trabajadorActual.servicio;
             document.getElementById('lblRegimen').innerText = `D.L. ${trabajadorActual.regimen}`;
 
-            const { data: kardexData } = await _supabase
-                .from('kardex_vacaciones')
-                .select('*')
-                .eq('trabajador_id', trabajadorActual.id);
+            let kardexData = [];
+            try {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}`, {
+                    headers: getHeaders()
+                });
+                if (resp.ok) kardexData = await resp.json();
+            } catch(e) {}
 
             const tbody = document.getElementById('tbodyKardex');
             tbody.innerHTML = "";
@@ -437,9 +438,13 @@
                 cargo: document.getElementById('regCargo').value.trim().toUpperCase()
             };
 
-            const { data, error } = await _supabase.from('trabajadores').insert([nuevo]).select();
+            const resp = await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify(nuevo)
+            });
 
-            if (!error && data) {
+            if (resp.ok) {
                 alert(`¡Trabajador ${nuevo.nombre_completo} registrado en la nube!`);
                 document.getElementById('formNuevoTrabajador').reset();
                 cargarTrabajadoresDesdeNube();
@@ -460,9 +465,13 @@
                 actualizado_por: usuarioSesion.id
             };
 
-            const { error } = await _supabase.from('kardex_vacaciones').upsert([kardex]);
+            const resp = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: { ...getHeaders(), "Prefer": "resolution=merge-duplicates" },
+                body: JSON.stringify(kardex)
+            });
 
-            if (!error) {
+            if (resp.ok) {
                 alert(`¡Kardex del periodo ${kardex.periodo_ano} actualizado!`);
                 cargarTrabajador(trabajadorActual.id);
             }
@@ -471,8 +480,12 @@
         async function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
             if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} de la base de datos?`)) {
-                const { error } = await _supabase.from('trabajadores').delete().eq('id', trabajadorActual.id);
-                if (!error) {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                });
+
+                if (resp.ok) {
                     alert("Trabajador eliminado con éxito.");
                     cargarTrabajadoresDesdeNube();
                 }
@@ -481,7 +494,7 @@
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES EN TIEMPO REAL
+        // BUSCADORES
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) return renderDesplegable(listaTrabajadores);
