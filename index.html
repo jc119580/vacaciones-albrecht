@@ -79,11 +79,11 @@
             <!-- COLUMNA IZQUIERDA -->
             <section class="lg:col-span-1 space-y-6">
                 
-                <!-- BUSCADOR -->
+                <!-- BUSCADOR CON FILTRO CRUZADO POR CARGO Y MES REAL -->
                 <div class="bg-blue-900 text-white rounded-xl shadow-md p-4 border border-blue-800 space-y-3">
                     <div class="flex justify-between items-center">
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-magnifying-glass"></i> Buscador de Personal
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscador por Cargo y Mes
                         </p>
                         <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">0 En la Base</span>
                     </div>
@@ -101,8 +101,27 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[11px] text-blue-200 mb-1">Mes de Salida Real (Convenios):</label>
-                            <select id="selectFiltroMesReal" onchange="filtrarPorMesReal()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                            <label class="block text-[11px] text-blue-200 mb-1">Cargo del Trabajador:</label>
+                            <select id="selectFiltroCargo" onchange="aplicarFiltrosAvanzados()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                                <option value="TODOS">-- Todos los Cargos --</option>
+                                <option value="MEDICO">MEDICO</option>
+                                <option value="ENFERMERA">ENFERMERA(O)</option>
+                                <option value="TECNICO DE ENFERMERIA">TECNICO DE ENFERMERIA</option>
+                                <option value="OBSTETRIZ">OBSTETRIZ</option>
+                                <option value="TECNOLOGO MEDICO">TECNOLOGO MEDICO</option>
+                                <option value="QUIMICO FARMACEUTICO">QUIMICO FARMACEUTICO</option>
+                                <option value="NUTRICIONISTA">NUTRICIONISTA</option>
+                                <option value="ODONTOLOGO">ODONTOLOGO</option>
+                                <option value="PSICOLOGO">PSICOLOGO</option>
+                                <option value="TRABAJADOR(A) SOCIAL">TRABAJADOR(A) SOCIAL</option>
+                                <option value="DIGITADOR ASISTENCIAL">DIGITADOR ASISTENCIAL</option>
+                                <option value="TECNICO DE SERVICIO ASISTENCIAL">TECNICO SERVICIO ASIST.</option>
+                                <option value="CHOFER ASISTENCIAL">CHOFER ASISTENCIAL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-blue-200 mb-1">Mes Salida (Convenios):</label>
+                            <select id="selectFiltroMesReal" onchange="aplicarFiltrosAvanzados()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
                                 <option value="TODOS">-- Todos los Meses --</option>
                                 <option value="01">Enero</option>
                                 <option value="02">Febrero</option>
@@ -118,13 +137,12 @@
                                 <option value="12">Diciembre</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-[11px] text-blue-200 mb-1">Nombre / Apellido:</label>
-                            <input type="text" id="txtFiltroNombre" placeholder="Buscar nombre..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none">
-                        </div>
                     </div>
 
                     <div>
+                        <label class="block text-[11px] text-blue-200 mb-1">Nombre / Apellido:</label>
+                        <input type="text" id="txtFiltroNombre" placeholder="Escribe el nombre a buscar..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none mb-2">
+                        
                         <select id="selectTrabajador" class="w-full text-xs font-semibold rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none shadow">
                         </select>
                     </div>
@@ -233,19 +251,19 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
-                        <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">-</p>
+                        <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">0 Días</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-xs text-slate-500">Deuda Años Anteriores</p>
-                        <p id="lblDeudaAnteriores" class="text-xl font-bold text-red-600">-</p>
+                        <p id="lblDeudaAnteriores" class="text-xl font-bold text-red-600">0 Días</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-xs text-slate-500">Total Días Pendientes</p>
-                        <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">-</p>
+                        <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">0 Días</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-xs text-slate-500">Adelanto 2027</p>
-                        <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">-</p>
+                        <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">0 Días</p>
                     </div>
                 </div>
 
@@ -266,7 +284,7 @@
                     </div>
                 </div>
 
-                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO (SOLO RRHH) -->
+                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
@@ -323,7 +341,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO CON CONTROL DE PERMISOS -->
+                    <!-- TABLA KARDEX AUDITADO -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -550,6 +568,7 @@
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
                 if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                else limpiarVistaPantalla();
             }
         }
 
@@ -561,35 +580,93 @@
             const select = document.getElementById('selectTrabajador');
             select.innerHTML = "";
             document.getElementById('lblTotalRegistrados').innerText = `${lista.length} En la Base`;
+
+            if (lista.length === 0) {
+                const opt = document.createElement('option');
+                opt.innerText = "-- Sin coincidencias --";
+                select.appendChild(opt);
+                limpiarVistaPantalla();
+                return;
+            }
+
             lista.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.id;
-                opt.innerText = `${t.nombre_completo} [DNI: ${t.dni || '-'}] [Planilla: ${t.planilla || '-'}] [Rol: ${t.mes_rol || 'Octubre'}]`;
+                opt.innerText = `${t.nombre_completo} [${t.cargo}] [Rol: ${t.mes_rol || 'Octubre'}]`;
                 select.appendChild(opt);
             });
         }
 
-        function filtrarPorMesReal() {
+        function limpiarVistaPantalla() {
+            trabajadorActual = null;
+            document.getElementById('lblNombre').innerText = "Sin resultados";
+            document.getElementById('lblDni').innerText = "-";
+            document.getElementById('lblPlanilla').innerText = "-";
+            document.getElementById('lblCargo').innerText = "-";
+            document.getElementById('lblServicio').innerText = "-";
+            document.getElementById('lblRegimen').innerText = "-";
+            document.getElementById('lblMesRol').innerText = "-";
+
+            document.getElementById('lblSaldo2026').innerText = "0 Días";
+            document.getElementById('lblDeudaAnteriores').innerText = "0 Días";
+            document.getElementById('lblTotalPendientes').innerText = "0 Días";
+            document.getElementById('lblAdelanto2027').innerText = "0 Días";
+
+            document.getElementById('lblEstadoDomingosBox').innerText = "0 / 0 Domingos";
+            document.getElementById('lblDomingosFaltantes').innerText = "✓ Conforme";
+            document.getElementById('lblExplicacionDomingos').innerText = "No hay trabajador seleccionado.";
+
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+            document.getElementById('kardexDiasPendientes').value = '';
+            document.getElementById('kardexFechasDetalle').value = '';
+
+            document.getElementById('tbodyKardex').innerHTML = `
+                <tr>
+                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros vacacionales que mostrar para este filtro.</td>
+                </tr>
+            `;
+        }
+
+        // FILTRO COMBINADO POR CARGO + MES SALIDA REAL
+        function aplicarFiltrosAvanzados() {
+            const cargoSel = document.getElementById('selectFiltroCargo').value;
             const mesNum = document.getElementById('selectFiltroMesReal').value;
-            if (mesNum === "TODOS") {
-                listaTrabajadores = TRABAJADORES_BASE;
-            } else {
-                listaTrabajadores = TRABAJADORES_BASE.filter(t => {
+
+            listaTrabajadores = TRABAJADORES_BASE.filter(t => {
+                // 1. FILTRO POR CARGO
+                let cumpleCargo = true;
+                if (cargoSel !== "TODOS") {
+                    cumpleCargo = (t.cargo || "").toUpperCase().includes(cargoSel.toUpperCase());
+                }
+
+                // 2. FILTRO POR MES SALIDA REAL (CONVENIOS)
+                let cumpleMes = true;
+                if (mesNum !== "TODOS") {
+                    cumpleMes = false;
                     const kardex = KARDEX_MEMORIA[t.id] || [];
                     for (let k of kardex) {
                         if (k.detalle_fechas) {
                             const tramos = k.detalle_fechas.split(" | ");
                             for (let tramo of tramos) {
                                 const matchIni = tramo.match(/Del (\d{1,2})\/(\d{1,2})\/\d{4}/);
-                                if (matchIni && matchIni[2].padStart(2, '0') === mesNum) return true;
+                                if (matchIni && matchIni[2].padStart(2, '0') === mesNum) {
+                                    cumpleMes = true;
+                                    break;
+                                }
                             }
                         }
                     }
-                    return false;
-                });
-            }
+                }
+
+                return cumpleCargo && cumpleMes;
+            });
+
             renderDesplegable(listaTrabajadores);
             if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+            else limpiarVistaPantalla();
         }
 
         function parseFechaLocal(strFecha) {
@@ -645,7 +722,7 @@
 
         function cargarTrabajador(id) {
             trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
-            if (!trabajadorActual) return;
+            if (!trabajadorActual) return limpiarVistaPantalla();
 
             document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
             document.getElementById('lblDni').innerText = trabajadorActual.dni || "Sin registro";
@@ -679,10 +756,8 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
-                // ORDENAR HISTORIAL CRONOLÓGICAMENTE
                 k.detalle_fechas = ordenarDetalleCronologico(k.detalle_fechas);
 
-                // CLASIFICAR SI EL TRAMO ES GOZADO O PROGRAMADO FUTURO
                 let esFuturo = false;
                 if (k.detalle_fechas) {
                     const matchFin = k.detalle_fechas.match(/al (\d{1,2}\/\d{1,2}\/\d{4})/);
@@ -696,7 +771,6 @@
                     ? `<span class="bg-purple-100 text-purple-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Programado (Futuro)</span>`
                     : `<span class="bg-blue-100 text-blue-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Gozado (Efectivo)</span>`;
 
-                // CONTAR DOMINGOS EN EL HISTORIAL
                 let domingosEnHistorial = 0;
                 const matches = (k.detalle_fechas || "").match(/Incluye (\d+) domingos?/g);
                 if (matches) {
@@ -706,7 +780,6 @@
                     });
                 }
 
-                // REGLA DE AUDITORÍA DE ESSALUD (DOMINGOS):
                 let alertaDomingoHTML = "";
                 if (diasGozadosTotales >= 30 && domingosEnHistorial < 4) {
                     alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
@@ -716,7 +789,6 @@
                     alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
                 }
 
-                // MOSTRAR BOTONES SOLO A RRHH (ADMINISTRADOR)
                 let celdaAccionesHTML = "";
                 if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
                     celdaAccionesHTML = `
@@ -765,7 +837,6 @@
             sincronizarFormularioConTabla();
         }
 
-        // ABRIR MODAL PARA GESTIONAR O BORRAR TRAMOS INDIVIDUALES (SOLO RRHH)
         function abrirModalTramoAno(ano) {
             if (!trabajadorActual) return;
             if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
@@ -801,7 +872,6 @@
             document.getElementById('modalEditarTramo').classList.add('hidden');
         }
 
-        // BORRAR UN TRAMO ESPECÍFICO DEL HISTORIAL Y RECALCULAR SALDO EXACTO
         function borrarTramoEspecifico(indexTramo) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === anoEdicionModal);
@@ -825,7 +895,6 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // VALIDACIÓN DE BLOQUEO DE ADELANTO SI TIENE DÍAS PENDIENTES
         function validarSeleccionAnoAdelantado() {
             if (!trabajadorActual) return;
             const anoSel = parseInt(document.getElementById('kardexAno').value);
@@ -849,7 +918,6 @@
             actualizarContadorDomingos();
         }
 
-        // ACTUALIZAR TARJETA SUPERIOR DE AUDITORÍA DE DOMINGOS
         function actualizarContadorDomingos() {
             if (!trabajadorActual) return;
             const anoSeleccionado = parseInt(document.getElementById('kardexAno').value);
@@ -889,7 +957,6 @@
             document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días computados.`;
         }
 
-        // CÁLCULO DE DÍAS Y CONTROL DE SOLAPAMIENTO DE FECHAS
         function calcularDiasFechas() {
             const fIniVal = document.getElementById('fechaInicio').value;
             const fFinVal = document.getElementById('fechaFin').value;
@@ -908,7 +975,6 @@
                 return;
             }
 
-            // VALIDAR SOLAPAMIENTO CON TRAMOS ANTERIORES DEL TRABAJADOR
             let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
             let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
 
@@ -970,7 +1036,6 @@
             document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
         }
 
-        // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO (SOLO RRHH)
         function eliminarTramoAno(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
@@ -988,7 +1053,6 @@
             }
         }
 
-        // REINICIAR PERIODO Y VOLVER A 30 DÍAS LIBRES (SOLO RRHH)
         function reiniciarPeriodo(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
@@ -1007,7 +1071,6 @@
             }
         }
 
-        // GUARDAR / ACUMULACIÓN DE TRAMO DE VACACIONES (SOLO RRHH)
         async function guardarTramoAno(e) {
             e.preventDefault();
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
@@ -1070,7 +1133,6 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // REGISTRAR NUEVO SERVIDOR (SOLO RRHH)
         async function guardarNuevoTrabajador(e) {
             e.preventDefault();
             if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
@@ -1109,7 +1171,6 @@
             cargarTrabajador(nuevo.id);
         }
 
-        // EDITAR DATOS DEL SERVIDOR (SOLO RRHH)
         function abrirModalEditarTrabajador() {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
@@ -1160,7 +1221,6 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // ELIMINAR SERVIDOR COMPLETO (SOLO RRHH)
         async function eliminarTrabajadorActual() {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion1 = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}] de la base de datos?`);
@@ -1180,6 +1240,7 @@
                     alert("Trabajador eliminado de la base con éxito.");
                     renderDesplegable(listaTrabajadores);
                     if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                    else limpiarVistaPantalla();
                 }
             }
         }
@@ -1189,29 +1250,41 @@
         // BUSCADORES EN TIEMPO REAL
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
-            if (!dni) return renderDesplegable(TRABAJADORES_BASE);
-            const enc = TRABAJADORES_BASE.find(t => t.dni && t.dni.startsWith(dni));
-            if (enc) {
-                renderDesplegable([enc]);
-                cargarTrabajador(enc.id);
+            if (!dni) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
             }
+            const enc = TRABAJADORES_BASE.filter(t => t.dni && t.dni.startsWith(dni));
+            renderDesplegable(enc);
+            if (enc.length > 0) cargarTrabajador(enc[0].id);
+            else limpiarVistaPantalla();
         });
 
         document.getElementById('txtBuscarPlanilla').addEventListener('input', function(e) {
             const plan = e.target.value.trim();
-            if (!plan) return renderDesplegable(TRABAJADORES_BASE);
-            const enc = TRABAJADORES_BASE.find(t => t.planilla && t.planilla.startsWith(plan));
-            if (enc) {
-                renderDesplegable([enc]);
-                cargarTrabajador(enc.id);
+            if (!plan) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
             }
+            const enc = TRABAJADORES_BASE.filter(t => t.planilla && t.planilla.startsWith(plan));
+            renderDesplegable(enc);
+            if (enc.length > 0) cargarTrabajador(enc[0].id);
+            else limpiarVistaPantalla();
         });
 
         document.getElementById('txtFiltroNombre').addEventListener('input', function(e) {
             const txt = e.target.value.toLowerCase().trim();
+            if (!txt) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
+            }
             const filt = TRABAJADORES_BASE.filter(t => t.nombre_completo.toLowerCase().includes(txt));
             renderDesplegable(filt);
             if (filt.length > 0) cargarTrabajador(filt[0].id);
+            else limpiarVistaPantalla();
         });
     </script>
 </body>
