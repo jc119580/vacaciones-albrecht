@@ -204,7 +204,7 @@
                     </div>
                 </div>
 
-                <!-- PROGRAMACIÓN Y ACUMULACIÓN DE VACACIONES -->
+                <!-- PROGRAMACIÓN Y ACUMULACIÓN DE VACACIONES CON AUDITORÍA DE DOMINGOS -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
@@ -261,7 +261,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO CON BOTOES COMPLETOS (EDITAR / ELIMINAR / REINICIAR) -->
+                    <!-- TABLA KARDEX CON BOTONES COMPLETOS (EDITAR Y ELIMINAR) Y ALERTAS DE DOMINGOS -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -737,7 +737,7 @@
 
             if (!KARDEX_MEMORIA[trabajadorActual.id]) {
                 KARDEX_MEMORIA[trabajadorActual.id] = [
-                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026", domingos_acumulados: 0 }
+                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
                 ];
                 guardarStorage();
             }
@@ -757,7 +757,7 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
-                // CONTAR DOMINGOS EN EL TEXTO DEL HISTORIAL
+                // CONTAR DOMINGOS EN EL TEXTO DEL HISTORIAL COMPLETO
                 let domingosEnHistorial = 0;
                 const matches = (k.detalle_fechas || "").match(/Incluye (\d+) domingos?/g);
                 if (matches) {
@@ -767,13 +767,17 @@
                     });
                 }
 
-                // REGLA DE AUDITORÍA DE ESSALUD:
-                // Si gozó 21 o más días, exige al menos 3 domingos. Si gozó 30 días, exige 4 domingos.
+                // REGLA DE AUDITORÍA DE ESSALUD (DOMINGOS):
+                // 15 Días -> Mínimo 2 Domingos
+                // 21 Días -> Mínimo 3 Domingos
+                // 30 Días -> Mínimo 4 Domingos
                 let alertaDomingoHTML = "";
-                if (diasGozadosTotales >= 21 && diasGozadosTotales < 30 && domingosEnHistorial < 3) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 21 días gozados se requiere mínimo 3 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/3)</span>`;
-                } else if (diasGozadosTotales === 30 && domingosEnHistorial < 4) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 30 días gozados se requiere 4 domingos">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                if (diasGozadosTotales >= 30 && domingosEnHistorial < 4) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 30 días gozados (4 semanas) se requiere MÍNIMO 4 domingos">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                } else if (diasGozadosTotales >= 21 && domingosEnHistorial < 3) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 21 días gozados (3 semanas) se requiere MÍNIMO 3 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/3)</span>`;
+                } else if (diasGozadosTotales >= 15 && domingosEnHistorial < 2) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 15 días gozados (2 semanas) se requiere MÍNIMO 2 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/2)</span>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -1056,7 +1060,7 @@
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES EN TIEMPO REAL
+        // BUSCADORES
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) return renderDesplegable(TRABAJADORES_BASE);
