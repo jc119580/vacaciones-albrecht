@@ -244,7 +244,7 @@
                     </div>
                 </div>
 
-                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO OBLIGATORIO -->
+                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
@@ -266,11 +266,11 @@
                             </div>
                             <div>
                                 <label class="block text-slate-600 mb-1 font-semibold">Fecha Inicio Tramo (Calendario):</label>
-                                <input type="date" id="fechaInicio" onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                                <input type="date" id="fechaInicio" required onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
                             </div>
                             <div>
                                 <label class="block text-slate-600 mb-1 font-semibold">Fecha Fin Tramo (Calendario):</label>
-                                <input type="date" id="fechaFin" onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                                <input type="date" id="fechaFin" required onchange="calcularDiasFechas()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
                             </div>
                         </div>
 
@@ -409,7 +409,7 @@
             </div>
             
             <div class="space-y-3">
-                <p class="text-slate-600">A continuación se muestran los tramos registrados para este año. Puede eliminar un tramo específico si hubo un error en las fechas:</p>
+                <p class="text-slate-600">A continuación se muestran los tramos registrados para este año. Puede borrar un tramo específico si hubo un error en las fechas:</p>
                 
                 <div id="contenedorTramosLista" class="space-y-2 max-h-60 overflow-y-auto pr-1">
                 </div>
@@ -758,20 +758,60 @@
             document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días gozados.`;
         }
 
-        // CÁLCULO DE DÍAS Y DOMINGOS EN TIEMPO REAL AL ELEGIR FECHAS EN EL CALENDARIO
+        // CONVERSIÓN DE FECHA A OBJETO DATE SIN DESFASE
+        function parseFechaLocal(strFecha) {
+            const partes = strFecha.split('/');
+            if (partes.length === 3) {
+                return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+            }
+            return null;
+        }
+
+        // CÁLCULO DE DÍAS Y CONTROL DE SOLAPAMIENTO DE FECHAS
         function calcularDiasFechas() {
-            const fIni = document.getElementById('fechaInicio').value;
-            const fFin = document.getElementById('fechaFin').value;
+            const fIniVal = document.getElementById('fechaInicio').value;
+            const fFinVal = document.getElementById('fechaFin').value;
             const ano = parseInt(document.getElementById('kardexAno').value);
 
-            if (!fIni || !fFin || !trabajadorActual) return;
+            if (!fIniVal || !fFinVal || !trabajadorActual) return;
 
-            const d1 = new Date(fIni + 'T00:00:00');
-            const d2 = new Date(fFin + 'T00:00:00');
+            const d1 = new Date(fIniVal + 'T00:00:00');
+            const d2 = new Date(fFinVal + 'T00:00:00');
 
+            // 1. VALIDAR CRONOLOGÍA INVERSA
             if (d2 < d1) {
-                alert("La fecha final no puede ser anterior a la fecha inicial.");
+                alert("🚨 FECHAS INVÁLIDAS:\nLa Fecha Fin del tramo no puede ser menor a la Fecha Inicio.");
+                document.getElementById('fechaFin').value = '';
+                document.getElementById('lblDiasCalculados').innerText = '0 Días';
+                document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
                 return;
+            }
+
+            // 2. VALIDAR SOLAPAMIENTO CON TRAMOS ANTERIORES DEL TRABAJADOR
+            let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
+
+            if (regPrevio && regPrevio.detalle_fechas) {
+                const tramosGuardados = regPrevio.detalle_fechas.split(" | ");
+                for (let tramo of tramosGuardados) {
+                    const matchFechas = tramo.match(/Del (\d{1,2}\/\d{1,2}\/\d{4}) al (\d{1,2}\/\d{1,2}\/\d{4})/);
+                    if (matchFechas) {
+                        const existIni = parseFechaLocal(matchFechas[1]);
+                        const existFin = parseFechaLocal(matchFechas[2]);
+
+                        if (existIni && existFin) {
+                            // CRUCE DE RANGOS
+                            if ((d1 >= existIni && d1 <= existFin) || (d2 >= existIni && d2 <= existFin) || (d1 <= existIni && d2 >= existFin)) {
+                                alert(`🚨 CRUCE DE FECHAS DETECTADO:\nEl rango seleccionado (${d1.toLocaleDateString('es-PE')} al ${d2.toLocaleDateString('es-PE')}) se superpone con un tramo ya registrado:\n"${tramo}"\n\nPor favor, elija un rango de fechas libre.`);
+                                document.getElementById('fechaInicio').value = '';
+                                document.getElementById('fechaFin').value = '';
+                                document.getElementById('lblDiasCalculados').innerText = '0 Días';
+                                document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+                                return;
+                            }
+                        }
+                    }
+                }
             }
 
             let diffTime = Math.abs(d2 - d1);
@@ -791,14 +831,13 @@
             const fFinFormatted = d2.toLocaleDateString('es-PE');
             const textoNuevoTramo = `Del ${fIniFormatted} al ${fFinFormatted} (${diasTramoActual} días - Incluye ${domingos} domingos)`;
 
-            // OBTENER HISTORIAL GUARDADO PREVIAMENTE EN ESE PERIODO
-            let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
-            let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
             let diasGozadosPrevios = regPrevio ? (30 - regPrevio.dias_pendientes) : 0;
-
             let nuevoTotalGozados = diasGozadosPrevios + diasTramoActual;
+
             if (nuevoTotalGozados > 30) {
-                alert(`¡Atención! Este tramo de ${diasTramoActual} días supera el máximo de 30 días del periodo ${ano}.`);
+                alert(`🚨 EXCESO DE DÍAS:\nEste tramo de ${diasTramoActual} días supera el máximo de 30 días permitidos para el periodo ${ano}.`);
+                document.getElementById('fechaFin').value = '';
+                return;
             }
 
             let nuevoSaldoRestante = 30 - nuevoTotalGozados;
