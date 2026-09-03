@@ -124,13 +124,12 @@
                         <div><p class="text-slate-500">Servicio:</p><p id="lblServicio" class="font-semibold text-slate-700">-</p></div>
                     </div>
 
-                    <!-- BOTONES DE EDICIÓN Y ELIMINACIÓN -->
                     <div id="boxAccionesAdmin" class="hidden pt-3 border-t flex justify-between items-center">
                         <button onclick="abrirModalEditarTrabajador()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1">
                             <i class="fa-solid fa-user-pen"></i> Editar Datos
                         </button>
                         <button onclick="eliminarTrabajadorActual()" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1">
-                            <i class="fa-solid fa-trash"></i> Eliminar
+                            <i class="fa-solid fa-trash"></i> Eliminar Servidor
                         </button>
                     </div>
                 </div>
@@ -205,11 +204,11 @@
                     </div>
                 </div>
 
-                <!-- REGISTRO CON CALENDARIO Y REGLA DE DOMINGOS -->
+                <!-- PROGRAMACIÓN DE VACACIONES -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
-                        Programación de Vacaciones con Calendario
+                        Programación y Registro de Vacaciones con Calendario
                     </h3>
 
                     <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
@@ -237,7 +236,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50 p-2.5 rounded border border-blue-200 items-center">
                             <div>
-                                <p class="text-[11px] text-blue-800 font-semibold">Días Solicitados:</p>
+                                <p class="text-[11px] text-blue-800 font-semibold">Días Gozados / Solicitados:</p>
                                 <p id="lblDiasCalculados" class="text-base font-bold text-blue-900">0 Días</p>
                             </div>
                             <div>
@@ -252,27 +251,27 @@
 
                         <div>
                             <label class="block text-slate-600 mb-1 font-semibold">Detalle de Fechas / Resolución N°:</label>
-                            <input type="text" id="kardexFechasDetalle" placeholder="Ej. Del 01/03/2026 al 30/03/2026 (Incluye 4 domingos - 30 días)" class="w-full border rounded p-2 bg-white outline-none">
+                            <input type="text" id="kardexFechasDetalle" placeholder="Ej. Del 01/03/2026 al 30/03/2026 (30 días - Incluye 4 domingos)" class="w-full border rounded p-2 bg-white outline-none">
                         </div>
 
                         <div class="text-right">
                             <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded shadow text-xs transition-colors">
-                                <i class="fa-solid fa-floppy-disk"></i> Modificar / Registrar Año en Kardex
+                                <i class="fa-solid fa-floppy-disk"></i> Modificar / Registrar Periodo en Kardex
                             </button>
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO -->
+                    <!-- TABLA KARDEX CON BOTONES DE EDITAR Y ELIMINAR -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 border-b">
                                     <th class="p-2 border">Año / Periodo</th>
                                     <th class="p-2 border">Derecho Base</th>
-                                    <th class="p-2 border">Gozados</th>
+                                    <th class="p-2 border">Días Gozados</th>
                                     <th class="p-2 border">Fechas / Meses Gozados</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
-                                    <th class="p-2 border">Estado Auditoría</th>
+                                    <th class="p-2 border">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyKardex">
@@ -756,15 +755,26 @@
                 if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
                 if (k.periodo_ano === 2027) adelanto2027 = 30 - k.dias_pendientes;
 
+                const diasGozados = 30 - k.dias_pendientes;
+
                 const tr = document.createElement('tr');
-                tr.className = "border-b";
+                tr.className = "border-b hover:bg-slate-50";
                 tr.innerHTML = `
                     <td class="p-2 border font-bold">${k.periodo_ano}</td>
                     <td class="p-2 border">30 Días</td>
-                    <td class="p-2 border">${30 - k.dias_pendientes} Días</td>
+                    <td class="p-2 border font-semibold text-blue-800">${diasGozados} Días</td>
                     <td class="p-2 border text-slate-700">${k.detalle_fechas || 'Sin registro'}</td>
                     <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
-                    <td class="p-2 border text-slate-500">${k.dias_pendientes === 0 ? 'Cerrado' : 'Pendiente'}</td>
+                    <td class="p-2 border">
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="cargarFormularioAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Editar este año">
+                                <i class="fa-solid fa-pen"></i> Editar
+                            </button>
+                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar este año">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -775,7 +785,7 @@
             document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
         }
 
-        // CÁLCULO DE DÍAS Y DOMINGOS CON FECHAS (CALENDARIO)
+        // CÁLCULO AUTOMÁTICO DE DÍAS Y DOMINGOS
         function calcularDiasFechas() {
             const fIni = document.getElementById('fechaInicio').value;
             const fFin = document.getElementById('fechaFin').value;
@@ -811,7 +821,73 @@
             document.getElementById('kardexDiasPendientes').value = saldoActual >= 0 ? saldoActual : 0;
         }
 
-        // REGISTRAR NUEVO SERVIDOR
+        // CARGAR PERIODO EN EL FORMULARIO PARA EDITAR
+        function cargarFormularioAno(ano) {
+            if (!trabajadorActual) return;
+            const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === ano);
+            if (k) {
+                document.getElementById('kardexAno').value = ano;
+                document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
+                document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || '';
+                document.getElementById('lblDiasCalculados').innerText = `${30 - k.dias_pendientes} Días`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // ELIMINAR PERIODO DE VACACIONES ESPECÍFICO
+        function eliminarTramoAno(ano) {
+            if (!trabajadorActual) return;
+            if (confirm(`¿Está seguro de eliminar las vacaciones registradas del periodo ${ano}?`)) {
+                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
+                guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
+                alert(`Periodo ${ano} eliminado con éxito.`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        // GUARDAR / MODIFICAR TRAMO DE AÑO
+        async function guardarTramoAno(e) {
+            e.preventDefault();
+            if (!trabajadorActual) return;
+
+            const ano = parseInt(document.getElementById('kardexAno').value);
+            const pend = parseInt(document.getElementById('kardexDiasPendientes').value);
+            const det = document.getElementById('kardexFechasDetalle').value.trim();
+
+            if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
+            
+            const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
+            if (idx >= 0) {
+                KARDEX_MEMORIA[trabajadorActual.id][idx] = { periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det };
+            } else {
+                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
+            }
+
+            guardarStorage();
+
+            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: { ...getHeaders(), "Prefer": "resolution=merge-duplicates" },
+                body: JSON.stringify({
+                    trabajador_id: trabajadorActual.id,
+                    periodo_ano: ano,
+                    dias_pendientes: pend,
+                    detalle_fechas: det,
+                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert(`¡Kardex del periodo ${ano} actualizado con éxito!`);
+            cargarTrabajador(trabajadorActual.id);
+        }
+
+        // AGREGAR NUEVO SERVIDOR
         async function guardarNuevoTrabajador(e) {
             e.preventDefault();
             const nuevo = {
@@ -827,7 +903,6 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            // SINCRONIZAR NUBE
             fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                 method: "POST",
                 headers: getHeaders(),
@@ -847,7 +922,7 @@
             cargarTrabajador(nuevo.id);
         }
 
-        // EDITAR TRABAJADOR
+        // EDITAR DATOS DEL SERVIDOR
         function abrirModalEditarTrabajador() {
             if (!trabajadorActual) return;
             document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
@@ -877,7 +952,6 @@
             guardarStorage();
             cerrarModalEditar();
 
-            // SINCRONIZAR CON LA NUBE
             fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
                 method: "PATCH",
                 headers: getHeaders(),
@@ -896,44 +970,7 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // GUARDAR KARDEX VACACIONAL
-        async function guardarTramoAno(e) {
-            e.preventDefault();
-            if (!trabajadorActual) return;
-
-            const ano = parseInt(document.getElementById('kardexAno').value);
-            const pend = parseInt(document.getElementById('kardexDiasPendientes').value);
-            const det = document.getElementById('kardexFechasDetalle').value.trim();
-
-            if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
-            
-            const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
-            if (idx >= 0) {
-                KARDEX_MEMORIA[trabajadorActual.id][idx] = { periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det };
-            } else {
-                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
-            }
-
-            guardarStorage();
-
-            // SINCRONIZAR CON LA NUBE
-            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
-                method: "POST",
-                headers: { ...getHeaders(), "Prefer": "resolution=merge-duplicates" },
-                body: JSON.stringify({
-                    trabajador_id: trabajadorActual.id,
-                    periodo_ano: ano,
-                    dias_pendientes: pend,
-                    detalle_fechas: det,
-                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
-                })
-            }).catch(e => console.error("Sincronización diferida"));
-
-            alert(`¡Kardex vacacional del periodo ${ano} actualizado con éxito!`);
-            cargarTrabajador(trabajadorActual.id);
-        }
-
-        // ELIMINAR TRABAJADOR
+        // ELIMINAR SERVIDOR COMPLETO
         async function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
             if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} del sistema?`)) {
