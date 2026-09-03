@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión de Vacaciones - Hospital II Albrecht</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-slate-100 font-sans text-slate-800">
@@ -86,7 +86,7 @@
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscador de Personal
                         </p>
-                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">0 En la Base</span>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Cargando...</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -258,14 +258,18 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN Y CREDENCIALES DIRECTAS -->
+    <!-- SCRIPT DE CONEXIÓN CON SUPABASE CLIENTE UNIVERSAL -->
     <script>
         const SUPABASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co";
         const SUPABASE_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let _supabase;
+        try {
+            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Error inicializando Supabase Client");
+        }
 
-        // CREDENCIALES LOCALES DE RESPALDO PARA LOGIN GARANTIZADO
         const USUARIOS_LOCALES = [
             { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
             { id: 2, username: "ENFERMERIA", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Enfermería", rol: "VISOR", cargo_jefatura: "Departamento de Enfermería" },
@@ -301,22 +305,18 @@
 
             let usuarioValido = null;
 
-            // Intentar autenticación vía Supabase
-            try {
-                const { data } = await _supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('username', usr)
-                    .eq('password_hash', pwd);
-                
-                if (data && data.length > 0) {
-                    usuarioValido = data[0];
-                }
-            } catch (err) {
-                console.log("Servidor ocupado, usando autenticación directa...");
+            if (_supabase) {
+                try {
+                    const { data } = await _supabase
+                        .from('usuarios')
+                        .select('*')
+                        .eq('username', usr)
+                        .eq('password_hash', pwd);
+                    
+                    if (data && data.length > 0) usuarioValido = data[0];
+                } catch (err) {}
             }
 
-            // Si falla Supabase, validar con la tabla local integrada
             if (!usuarioValido) {
                 usuarioValido = USUARIOS_LOCALES.find(u => u.username === usr && u.password_hash === pwd);
             }
@@ -350,6 +350,7 @@
         }
 
         async function cargarTrabajadoresDesdeNube() {
+            if (!_supabase) return;
             try {
                 const { data, error } = await _supabase
                     .from('trabajadores')
@@ -362,7 +363,7 @@
                     if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
                 }
             } catch(e) {
-                console.log("Modo inicial en espera de data...");
+                console.error("Error al obtener la lista de trabajadores");
             }
         }
 
@@ -480,7 +481,7 @@
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES
+        // BUSCADORES EN TIEMPO REAL
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) return renderDesplegable(listaTrabajadores);
