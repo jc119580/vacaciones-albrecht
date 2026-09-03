@@ -109,13 +109,13 @@
                 </div>
 
                 <!-- FICHA DEL SERVIDOR -->
-                <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
-                    <div class="flex justify-between items-center mb-3">
+                <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Servidor Público</span>
                         <span id="lblRegimen" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-300">-</span>
                     </div>
                     
-                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">-</h2>
+                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800">-</h2>
 
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div><p class="text-slate-500">DNI:</p><p id="lblDni" class="font-semibold text-slate-700">-</p></div>
@@ -124,14 +124,18 @@
                         <div><p class="text-slate-500">Servicio:</p><p id="lblServicio" class="font-semibold text-slate-700">-</p></div>
                     </div>
 
-                    <div id="boxAccionesAdmin" class="hidden mt-4 pt-3 border-t text-right">
-                        <button onclick="eliminarTrabajadorActual()" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-1.5 rounded text-xs transition-colors">
-                            <i class="fa-solid fa-trash"></i> Eliminar Trabajador
+                    <!-- BOTONES DE EDICIÓN Y ELIMINACIÓN (SOLO PARA RRHH) -->
+                    <div id="boxAccionesAdmin" class="hidden pt-3 border-t flex justify-between items-center">
+                        <button onclick="abrirModalEditarTrabajador()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-user-pen"></i> Editar Datos
+                        </button>
+                        <button onclick="eliminarTrabajadorActual()" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-trash"></i> Eliminar
                         </button>
                     </div>
                 </div>
 
-                <!-- MÓDULO AGREGAR PERSONAL -->
+                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -201,7 +205,7 @@
                     </div>
                 </div>
 
-                <!-- KARDEX Y CONFIGURACIÓN -->
+                <!-- KARDEX Y CONFIGURACIÓN DE VACACIONES -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-list-check text-blue-600"></i>
@@ -257,7 +261,59 @@
         </main>
     </div>
 
-    <!-- BASE DE DATOS INTEGRA Y SISTEMA AUTÓNOMO -->
+    <!-- MODAL PARA EDITAR DATOS DEL SERVIDOR -->
+    <div id="modalEditarTrabajador" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-amber-600"></i> Modificar Datos del Servidor
+                </h3>
+                <button onclick="cerrarModalEditar()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            <form onsubmit="guardarEdicionTrabajador(event)" class="space-y-3">
+                <div>
+                    <label class="block text-slate-600 mb-0.5">Apellidos y Nombres Completo:</label>
+                    <input type="text" id="editNombre" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">DNI:</label>
+                        <input type="text" id="editDni" maxlength="8" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">N° Planilla:</label>
+                        <input type="text" id="editPlanilla" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">Régimen Laboral:</label>
+                        <select id="editRegimen" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="728">D.L. 728</option>
+                            <option value="276">D.L. 276</option>
+                            <option value="CAS">CAS (1057)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">Servicio / Área:</label>
+                        <input type="text" id="editServicio" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
+                    <input type="text" id="editCargo" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalEditar()" class="px-3 py-2 border rounded font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded shadow">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BASE DE DATOS Y LÓGICA INTEGRA -->
     <script>
         const USUARIOS_SISTEMA = [
             { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
@@ -268,8 +324,8 @@
             { id: 6, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
         ];
 
-        // CARGA OFICIAL DE LOS 272 SERVIDORES PÚBLICOS
-        let TRABAJADORES_BASE = [
+        // DATO MAESTRO DE 272 SERVIDORES
+        const MAESTRO_INICIAL = [
             {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
             {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
             {"id":3,"dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO"},
@@ -544,7 +600,14 @@
             {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL"}
         ];
 
-        let KARDEX_MEMORIA = {};
+        // GESTIÓN DE PERSISTENCIA
+        let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
+        let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
+
+        function guardarStorage() {
+            localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
+            localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
+        }
 
         let usuarioSesion = null;
         let listaTrabajadores = TRABAJADORES_BASE;
@@ -628,6 +691,7 @@
                 KARDEX_MEMORIA[trabajadorActual.id] = [
                     { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
                 ];
+                guardarStorage();
             }
 
             const kardexData = KARDEX_MEMORIA[trabajadorActual.id];
@@ -660,6 +724,7 @@
             document.getElementById('lblAdelanto2027').innerText = `0 Días`;
         }
 
+        // AGREGAR TRABAJADOR
         function guardarNuevoTrabajador(e) {
             e.preventDefault();
             const nuevo = {
@@ -673,12 +738,48 @@
             };
 
             TRABAJADORES_BASE.unshift(nuevo);
+            guardarStorage();
             alert(`¡Trabajador ${nuevo.nombre_completo} registrado en el sistema!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
         }
 
+        // MODIFICAR DATOS DEL SERVIDOR
+        function abrirModalEditarTrabajador() {
+            if (!trabajadorActual) return;
+            document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
+            document.getElementById('editDni').value = trabajadorActual.dni;
+            document.getElementById('editPlanilla').value = trabajadorActual.planilla;
+            document.getElementById('editRegimen').value = trabajadorActual.regimen;
+            document.getElementById('editServicio').value = trabajadorActual.servicio;
+            document.getElementById('editCargo').value = trabajadorActual.cargo;
+            document.getElementById('modalEditarTrabajador').classList.remove('hidden');
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modalEditarTrabajador').classList.add('hidden');
+        }
+
+        function guardarEdicionTrabajador(e) {
+            e.preventDefault();
+            if (!trabajadorActual) return;
+
+            trabajadorActual.nombre_completo = document.getElementById('editNombre').value.trim().toUpperCase();
+            trabajadorActual.dni = document.getElementById('editDni').value.trim();
+            trabajadorActual.planilla = document.getElementById('editPlanilla').value.trim();
+            trabajadorActual.regimen = document.getElementById('editRegimen').value;
+            trabajadorActual.servicio = document.getElementById('editServicio').value.trim().toUpperCase();
+            trabajadorActual.cargo = document.getElementById('editCargo').value.trim().toUpperCase();
+
+            guardarStorage();
+            cerrarModalEditar();
+            alert("¡Datos del servidor actualizados con éxito!");
+            renderDesplegable(TRABAJADORES_BASE);
+            cargarTrabajador(trabajadorActual.id);
+        }
+
+        // MODIFICAR VACACIONES (KARDEX)
         function guardarTramoAno(e) {
             e.preventDefault();
             if (!trabajadorActual) return;
@@ -696,14 +797,18 @@
                 KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
             }
 
-            alert(`¡Kardex del periodo ${ano} actualizado!`);
+            guardarStorage();
+            alert(`¡Kardex del periodo ${ano} actualizado con éxito!`);
             cargarTrabajador(trabajadorActual.id);
         }
 
+        // ELIMINAR TRABAJADOR
         function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
-            if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} de la base de datos?`)) {
+            if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} del sistema?`)) {
                 TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
+                delete KARDEX_MEMORIA[trabajadorActual.id];
+                guardarStorage();
                 listaTrabajadores = TRABAJADORES_BASE;
                 alert("Trabajador eliminado con éxito.");
                 renderDesplegable(listaTrabajadores);
