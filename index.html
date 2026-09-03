@@ -122,6 +122,10 @@
                         <div><p class="text-slate-500">N° Planilla:</p><p id="lblPlanilla" class="font-bold text-blue-800">-</p></div>
                         <div><p class="text-slate-500">Cargo:</p><p id="lblCargo" class="font-semibold text-slate-700">-</p></div>
                         <div><p class="text-slate-500">Servicio:</p><p id="lblServicio" class="font-semibold text-slate-700">-</p></div>
+                        <div class="col-span-2 bg-purple-50 p-2 rounded border border-purple-200 flex justify-between items-center">
+                            <span class="text-purple-900 font-bold">Mes Rol Anual Programado:</span>
+                            <span id="lblMesRol" class="font-bold text-purple-700 uppercase bg-white px-2 py-0.5 rounded border border-purple-300">-</span>
+                        </div>
                     </div>
 
                     <div id="boxAccionesAdmin" class="hidden pt-3 border-t flex justify-between items-center">
@@ -169,9 +173,28 @@
                                 <input type="text" id="regServicio" required placeholder="Ej. ENFERMERIA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
-                            <input type="text" id="regCargo" required placeholder="Ej. ENFERMERA ESPECIALISTA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
+                                <input type="text" id="regCargo" required placeholder="Ej. ENFERMERA ESPECIALISTA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">Mes Rol Programado:</label>
+                                <select id="regMesRol" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="Enero">Enero</option>
+                                    <option value="Febrero">Febrero</option>
+                                    <option value="Marzo">Marzo</option>
+                                    <option value="Abril">Abril</option>
+                                    <option value="Mayo">Mayo</option>
+                                    <option value="Junio">Junio</option>
+                                    <option value="Julio">Julio</option>
+                                    <option value="Agosto">Agosto</option>
+                                    <option value="Setiembre">Setiembre</option>
+                                    <option value="Octubre" selected>Octubre</option>
+                                    <option value="Noviembre">Noviembre</option>
+                                    <option value="Diciembre">Diciembre</option>
+                                </select>
+                            </div>
                         </div>
                         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition-colors text-xs">
                             + Agregar Personal al Sistema
@@ -225,7 +248,7 @@
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
-                        Programación, Fraccionamiento y Registro con Calendario
+                        Programación, Fraccionamiento y Registro con Convenio
                     </h3>
 
                     <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
@@ -267,7 +290,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-slate-600 mb-1 font-semibold">Detalle del Tramo / Historial de Fechas:</label>
+                            <label class="block text-slate-600 mb-1 font-semibold">Detalle del Tramo / Historial de Fechas (Convenio/Papeleta):</label>
                             <input type="text" id="kardexFechasDetalle" placeholder="Ej. Del 21/09/2026 al 27/09/2026 (7 días - Incluye 1 domingos)" class="w-full border rounded p-2 bg-white outline-none">
                         </div>
 
@@ -278,14 +301,14 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO -->
+                    <!-- TABLA KARDEX AUDITADO CON ESTADO DE GOCE (PASADO VS FUTURO) -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 border-b">
                                     <th class="p-2 border">Año / Periodo</th>
                                     <th class="p-2 border">Derecho Base</th>
-                                    <th class="p-2 border">Días Gozados Totales</th>
+                                    <th class="p-2 border">Días Gozados / Programados</th>
                                     <th class="p-2 border">Historial Completo de Tramos / Fechas</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
                                     <th class="p-2 border">Acciones</th>
@@ -342,9 +365,28 @@
                         <input type="text" id="editServicio" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
-                    <input type="text" id="editCargo" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
+                        <input type="text" id="editCargo" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5">Mes Rol Programado:</label>
+                        <select id="editMesRol" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="Enero">Enero</option>
+                            <option value="Febrero">Febrero</option>
+                            <option value="Marzo">Marzo</option>
+                            <option value="Abril">Abril</option>
+                            <option value="Mayo">Mayo</option>
+                            <option value="Junio">Junio</option>
+                            <option value="Julio">Julio</option>
+                            <option value="Agosto">Agosto</option>
+                            <option value="Setiembre">Setiembre</option>
+                            <option value="Octubre">Octubre</option>
+                            <option value="Noviembre">Noviembre</option>
+                            <option value="Diciembre">Diciembre</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="cerrarModalEditar()" class="px-3 py-2 border rounded font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
@@ -369,278 +411,13 @@
         ];
 
         const MAESTRO_INICIAL = [
-            {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":3,"dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO"},
-            {"id":4,"dni":"40915917","planilla":"16639362","nombre_completo":"MIRANDA MOSTACERO VICKY ELIZABETH","regimen":"CAS","servicio":"ADMINISTRACION","cargo":"AUXILIAR ADMINISTRATIVO"},
-            {"id":5,"dni":"17865325","planilla":"16390730","nombre_completo":"CAPRISTAN CAMPOS MARIA DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":6,"dni":"41845362","planilla":"16469990","nombre_completo":"SALINAS EURIBE SANDRA JESSICA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":7,"dni":"06288704","planilla":"13495612","nombre_completo":"FERNANDEZ MALQUI EDUARDO VALENTIN","regimen":"728","servicio":"ANESTESIOLOGIA","cargo":"MEDICO"},
-            {"id":8,"dni":"75138994","planilla":"15974187","nombre_completo":"CASTAÑEDA RODAS LEYDI ELIZABETH","regimen":"728","servicio":"LABORATORIO","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":9,"dni":"27145516","planilla":"16469363","nombre_completo":"DIAZ PLASENCIA CESI ZENIT","regimen":"728","servicio":"ENFERMERIA","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":10,"dni":"18180946","planilla":"15320874","nombre_completo":"PEREZ GUEVARA FLOR DE MARIA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":11,"dni":"45586518","planilla":"15993142","nombre_completo":"RAMIREZ GARCIA GABRIELA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":12,"dni":"15682236","planilla":"14323942","nombre_completo":"FERNANDEZ LOPEZ BERNY GUADALUPE","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":13,"dni":"47812107","planilla":"16642789","nombre_completo":"CHACON MALCA SANDY JHUDIT","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":14,"dni":"17885296","planilla":"16658384","nombre_completo":"ROBLES DE PICASSO OLIVIA VIOLETA","regimen":"728","servicio":"FARMACIA","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":15,"dni":"19180118","planilla":"16659882","nombre_completo":"HERRERA COSTILLA MARIA ISABEL","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL"},
-            {"id":16,"dni":"18114157","planilla":"12618866","nombre_completo":"VILLANUEVA BECERRA BALDOMERO","regimen":"276","servicio":"LABORATORIO","cargo":"BIOLOGO"},
-            {"id":17,"dni":"17855832","planilla":"13144670","nombre_completo":"GAVIDIA NAVARRO JOSE FRANCISCO","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":18,"dni":"17802332","planilla":"13547608","nombre_completo":"QUINTANA JAVE JESUS SANTOS","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":19,"dni":"17909333","planilla":"13910090","nombre_completo":"RIVERA QUIROZ LUIS GERARDO","regimen":"728","servicio":"UROLOGIA","cargo":"MEDICO"},
-            {"id":20,"dni":"17914912","planilla":"14153068","nombre_completo":"GONZALES HERRERA JORGE RONALD","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":21,"dni":"17815135","planilla":"13843347","nombre_completo":"VALVERDE HARO RONAL NESTOR","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":22,"dni":"18026915","planilla":"14387302","nombre_completo":"VILLAR TEJADA PEDRO VICTORIANO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":23,"dni":"17841321","planilla":"13565219","nombre_completo":"CHARCAPE PERALTA APOLINAR GUILLERMO","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":24,"dni":"29580399","planilla":"13547848","nombre_completo":"GARCIA VILCA FREDDY RAUL","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":25,"dni":"44215098","planilla":"16102769","nombre_completo":"PELAEZ JULIAN YEMER ENRRIQUE","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":26,"dni":"18210788","planilla":"13502094","nombre_completo":"ALVA CASTILLO JOAQUIN ANTONIO","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":27,"dni":"27171771","planilla":"16421874","nombre_completo":"DE LA CRUZ BAZAN RONALD FERMIN","regimen":"728","servicio":"ADMINISTRACION","cargo":"CHOFER ASISTENCIAL"},
-            {"id":28,"dni":"18166847","planilla":"14790447","nombre_completo":"LU GALARRETA LUCIA DEL ROSARIO","regimen":"728","servicio":"GASTROENTEROLOGIA","cargo":"MEDICO"},
-            {"id":29,"dni":"18028910","planilla":"13685309","nombre_completo":"CRUZADO TOCAS DUANY MADELEYNE","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":30,"dni":"18067520","planilla":"13565031","nombre_completo":"RODRIGUEZ GUTIERREZ MARCELA SOLEDAD","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":31,"dni":"19693656","planilla":"14041287","nombre_completo":"MIÑANO TERRY JESENIA ARLETE","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":32,"dni":"18072210","planilla":"13744798","nombre_completo":"CHOQUEHUANCA ESCOBAR FLOR DE MARIA","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":33,"dni":"18086806","planilla":"13519017","nombre_completo":"VALVERDE MORENO VICTOR SANTOS","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":34,"dni":"18110051","planilla":"13520009","nombre_completo":"BERAUN AVALOS SILVIA ELIZABETH","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":35,"dni":"18111679","planilla":"13745368","nombre_completo":"MEDINA CHAVEZ BETTY LUZ","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":36,"dni":"18131327","planilla":"13518896","nombre_completo":"SALDAÑA CUEVA CARLOS ENRIQUE","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":37,"dni":"18826464","planilla":"13192707","nombre_completo":"MIRANDA PLASENCIA MARITA SOLEDAD","regimen":"728","servicio":"MEDICINA FAMILIAR Y COMUNITARIA","cargo":"MEDICO"},
-            {"id":38,"dni":"41010452","planilla":"16639310","nombre_completo":"FERNANDEZ CABANILLAS YSABEL PETRONILA","regimen":"CAS","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":39,"dni":"42379463","planilla":"15484768","nombre_completo":"VILLENA ZELADA MARLYN YOVANI","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":40,"dni":"40372058","planilla":"13685272","nombre_completo":"CASTANEDA QUIROZ KARLA ELIZABETH","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":41,"dni":"42283343","planilla":"16249016","nombre_completo":"CARRANZA CASTILLO JOSE CARLOS ALBERTO","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":42,"dni":"10218466","planilla":"16248953","nombre_completo":"GALAN SABA LILIANA","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":43,"dni":"41516589","planilla":"16470297","nombre_completo":"QUISPE CHAVEZ DIANA MELISSA","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":44,"dni":"43176716","planilla":"16248984","nombre_completo":"CARRANZA VALDERRAMA EDWIN ALEXANDER","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":45,"dni":"19081706","planilla":"14802533","nombre_completo":"ROCHA ALVARADO CARLOS ALBERTO","regimen":"728","servicio":"NEUROLOGIA","cargo":"MEDICO"},
-            {"id":46,"dni":"18857654","planilla":"16064962","nombre_completo":"RODRIGUEZ VILCA MANUEL CORAZON","regimen":"728","servicio":"ADMISION","cargo":"DIGITADOR ASISTENCIAL"},
-            {"id":47,"dni":"06275632","planilla":"14007503","nombre_completo":"CASTILLO NUÑEZ BERTHA ROSA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":48,"dni":"19232498","planilla":"13426400","nombre_completo":"FLORES FULLIMOTO ELIA ROSA","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":49,"dni":"06189174","planilla":"13332747","nombre_completo":"YUNTUL GOICOCHEA TERESA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":50,"dni":"16492109","planilla":"12076557","nombre_completo":"CANEVARO ALVA ANA MARIA RUTH","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":51,"dni":"16779934","planilla":"11577891","nombre_completo":"SANCHEZ TISNADO LIVIA CLOTILDE","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":52,"dni":"19332496","planilla":"14132781","nombre_completo":"ROSALES OLANO JUAN JULIO","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":53,"dni":"17905821","planilla":"12914303","nombre_completo":"ZAVALETA RODRIGUEZ MARIA VICTORIA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":54,"dni":"18025165","planilla":"12746094","nombre_completo":"MORALES MORALES YVONNE YSABEL","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":55,"dni":"26724124","planilla":"12720147","nombre_completo":"TAPIA SILVA LUIS ALBERTO","regimen":"276","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":56,"dni":"18194656","planilla":"11603721","nombre_completo":"CASTILLO LEON ELIZABETH ELENA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":57,"dni":"18826043","planilla":"12907760","nombre_completo":"MIRANDA PLASENCIA LUISA ELENA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":58,"dni":"17800297","planilla":"12920030","nombre_completo":"HERRERA LOPEZ CARMELA TERESA","regimen":"276","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":59,"dni":"18886309","planilla":"12384865","nombre_completo":"REYNA LOPEZ TERESA ESTHER","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":60,"dni":"19028584","planilla":"12459203","nombre_completo":"MERCEDES RODRIGUEZ EDITA LORENZA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":61,"dni":"19181754","planilla":"12915113","nombre_completo":"CHAPILLIQUEN CARRILLO JULIA MARGARITA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":62,"dni":"17875935","planilla":"13888975","nombre_completo":"BARRANTES MERCADO MARIA DEL ROSARIO","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":63,"dni":"19234787","planilla":"13889158","nombre_completo":"BIMINCHUMO VILLAVICENCIO SILVIA MARLENE","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":64,"dni":"17918211","planilla":"12934370","nombre_completo":"SILVA DE SANCHEZ GISELLA HERENIE","regimen":"276","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":65,"dni":"17922844","planilla":"14007325","nombre_completo":"PLASENCIA SANTA MARIA VICTOR ERNESTO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":66,"dni":"19243439","planilla":"13367484","nombre_completo":"AMAYA ABANTO ROSA ANITA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":67,"dni":"19246659","planilla":"12627327","nombre_completo":"GARCIA GUANILO LILIANA JANET","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":68,"dni":"17876220","planilla":"14340476","nombre_completo":"CESPEDES AGUILAR LINA ROSA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":69,"dni":"18075267","planilla":"14371257","nombre_completo":"CAFFO GONZALEZ SILVIA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":70,"dni":"18088224","planilla":"14371315","nombre_completo":"CORCIO DE LA CRUZ ROCIO DEL PILAR","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":71,"dni":"18087611","planilla":"14573335","nombre_completo":"RUIZ MENDEZ ANGEL PEDRO","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":72,"dni":"17809620","planilla":"12937611","nombre_completo":"VEREAU ZELADA GIANNINA LAVERNE","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":73,"dni":"17809933","planilla":"12915593","nombre_completo":"DIAZ LEON MARTHA MARILU","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":74,"dni":"17881537","planilla":"13910874","nombre_completo":"OBANDO POMA HIRALDA SUSANA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":75,"dni":"18092107","planilla":"14132692","nombre_completo":"FONG LEI ARMANDO EFREN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":76,"dni":"18095428","planilla":"13910901","nombre_completo":"ORBEGOSO AMAYA NORMA GLADYS","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":77,"dni":"18112971","planilla":"14336427","nombre_completo":"ESTRAVER CASTRO MIRCIA DEL PILAR","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":78,"dni":"17803645","planilla":"13910994","nombre_completo":"ACEVEDO ROJAS MARIA ISABEL","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":79,"dni":"17803902","planilla":"14007387","nombre_completo":"RODRIGUEZ ASCON FAVIOLA ELIZABETH","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":80,"dni":"17804999","planilla":"14153246","nombre_completo":"DIAZ VERGARA JOSE EDGARDO","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":81,"dni":"17805445","planilla":"14153188","nombre_completo":"MENDEZ TANDAYPAN MIRTHA","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":82,"dni":"17814648","planilla":"12895078","nombre_completo":"RODRIGUEZ RUIZ MARLENE ELIZABETH","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":83,"dni":"17817126","planilla":"12384050","nombre_completo":"PUELLES CARDOZO ELVIRA SOLEDAD","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":84,"dni":"17810413","planilla":"12936983","nombre_completo":"GOICOCHEA RIOS EVELYN DEL SOCORRO","regimen":"276","servicio":"MEDICINA FAMILIAR Y SALUD COMUNITARIA","cargo":"MEDICO"},
-            {"id":85,"dni":"17817832","planilla":"13889305","nombre_completo":"MIRANDA ROBLES ROSARIO JUDITH","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":86,"dni":"17878703","planilla":"12932185","nombre_completo":"RONCAL CASANOVA DORIS IRENE","regimen":"276","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":87,"dni":"17818007","planilla":"13917773","nombre_completo":"KEMPER VASQUEZ MONICA SOCORRO","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":88,"dni":"17821425","planilla":"14340623","nombre_completo":"MORENO PRIETO EDITH MARGOT","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":89,"dni":"17884233","planilla":"12616671","nombre_completo":"ABANTO SAENZ LUIS FERNANDO","regimen":"276","servicio":"OFTALMOLOGIA","cargo":"MEDICO"},
-            {"id":90,"dni":"17892118","planilla":"12921775","nombre_completo":"CASTILLO MARTELL SILVIA RAQUEL","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":91,"dni":"17895887","planilla":"12928732","nombre_completo":"ROJAS DE BOCANEGRA POLA IRENE","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":92,"dni":"18095242","planilla":"14562956","nombre_completo":"RODAS ESPINOZA PIHAR","regimen":"728","servicio":"DERMATOLOGIA","cargo":"MEDICO"},
-            {"id":93,"dni":"17996445","planilla":"12745400","nombre_completo":"MIÑANO GUZMAN SILVIA","regimen":"276","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":94,"dni":"18123709","planilla":"14107880","nombre_completo":"RODRIGUEZ ROJAS FIORELLA DE GUADALUPE","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":95,"dni":"33589807","planilla":"13744767","nombre_completo":"ABANTO ACOSTA MARIA NATIVIDAD","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":96,"dni":"18111502","planilla":"14748447","nombre_completo":"ESCOBEDO CAVA CARLOS CESAR","regimen":"728","servicio":"RADIOLOGIA","cargo":"MEDICO"},
-            {"id":97,"dni":"18833121","planilla":"13933199","nombre_completo":"KANO FLORIAN MARIA ESTHER","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":98,"dni":"18216416","planilla":"15483509","nombre_completo":"LINCH TORRES EMMA LILIANA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":99,"dni":"02870200","planilla":"14399755","nombre_completo":"MARTINO SEGURA YESENIA ISABEL","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":100,"dni":"45524815","planilla":"15486415","nombre_completo":"OBESO HORNA YUSSI YANIRA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":101,"dni":"06305237","planilla":"13196752","nombre_completo":"PERALTA RUIZ MONICA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":102,"dni":"42095512","planilla":"16471343","nombre_completo":"PEREZ ORTEGA VICTOR RODULFO","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":103,"dni":"43256811","planilla":"16248299","nombre_completo":"GELDRES MONZON CHRISTINE FIORELLA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":104,"dni":"18823086","planilla":"16151000","nombre_completo":"CORONADO CARRANZA ESTHER VICTORIA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":105,"dni":"43087551","planilla":"15933415","nombre_completo":"ASCON REGALADO CYNTHIA CAROLINA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":106,"dni":"17817271","planilla":"14153006","nombre_completo":"PORTILLA TIRADO JORGE LUIS","regimen":"728","servicio":"NEUROLOGIA","cargo":"MEDICO"},
-            {"id":107,"dni":"40258474","planilla":"14946114","nombre_completo":"FLORES CASTAÑEDA ZAIRA CLARITA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":108,"dni":"28202505","planilla":"14329466","nombre_completo":"VEGA VERGARAY JUANA TEODORA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":109,"dni":"31670787","planilla":"13966949","nombre_completo":"PASCO VIDAL CLAUDIA RAQUEL","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":110,"dni":"17825420","planilla":"14153277","nombre_completo":"HERRERA ZAVALETA JAVIER GUILLERMO","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":111,"dni":"17891704","planilla":"14340952","nombre_completo":"CHIAN GARCIA ANA MARIA","regimen":"728","servicio":"MEDICINA FAMILIAR Y SALUD COMUNITARIA","cargo":"MEDICO"},
-            {"id":112,"dni":"46998982","planilla":"16615187","nombre_completo":"GONZALEZ VARGAS ADA BELINDA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":113,"dni":"23988247","planilla":"16615123","nombre_completo":"CUMPA NOA ZENAYDA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":114,"dni":"72735494","planilla":"16609725","nombre_completo":"SANCHEZ PRETEL PATRICIA RAQUEL","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":115,"dni":"43110539","planilla":"16615208","nombre_completo":"PESCORAN RENGIFO CLAUDIA ELENA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":116,"dni":"44935494","planilla":"16614061","nombre_completo":"NAVARRO ARQUEROS JAHAYRA YUSSARA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":117,"dni":"41647219","planilla":"16615235","nombre_completo":"SALINAS ZAVALETA FANNY DANELY","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":118,"dni":"17905081","planilla":"12378652","nombre_completo":"HONORIO ROSAS OSCAR ERIBERTO","regimen":"276","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":119,"dni":"18149232","planilla":"16615196","nombre_completo":"HOYOS PRIETO MARIA HORMECINDA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":120,"dni":"47122663","planilla":"16615243","nombre_completo":"SORIANO VEGA SOLEDAD GABRIELA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":121,"dni":"73544614","planilla":"16614055","nombre_completo":"GONZALES ROJAS LUIS DAVID","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":122,"dni":"70468341","planilla":"16614058","nombre_completo":"MENDEZ VARAS CLAUDIA ISABEL","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":123,"dni":"41656322","planilla":"16629979","nombre_completo":"LAIZA MELGAREJO JACQUELINE MARIA","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":124,"dni":"18126712","planilla":"13192649","nombre_completo":"RIOS CARO MANUELA VICTORIA","regimen":"728","servicio":"MEDICINA GENERAL INTEGRAL","cargo":"MEDICO"},
-            {"id":125,"dni":"70408757","planilla":"16631380","nombre_completo":"UBILLUS BARDALES KAREN YESSENIA","regimen":"728","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":126,"dni":"74134726","planilla":"16638825","nombre_completo":"LEYVA QUEZADA FLOR MARIA DEL PILAR","regimen":"CAS","servicio":"ENFERMERIA","cargo":"ENFERMERA(O)"},
-            {"id":127,"dni":"18138019","planilla":"14763231","nombre_completo":"VICUÑA RIOS HUGO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":128,"dni":"26729294","planilla":"12752574","nombre_completo":"URIOL LLARO MARIA ELA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":129,"dni":"17833723","planilla":"14007058","nombre_completo":"MORGAN NORIEGA CARMEN ROSA","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":130,"dni":"18097109","planilla":"14007952","nombre_completo":"ZAVALETA PAREDES SONNIA PATRICIA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":131,"dni":"40104912","planilla":"14823081","nombre_completo":"GARCIA GARCIA PEDRO DANIEL","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":132,"dni":"40279246","planilla":"14716250","nombre_completo":"GUTIERREZ FLORES JOSE ARTURO","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":133,"dni":"44585811","planilla":"15970043","nombre_completo":"SILVA SANTIAGO ANA BEATRIZ","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":134,"dni":"43064415","planilla":"16630041","nombre_completo":"ESPARZA TAFUR PATRICIA LILIBETH","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":135,"dni":"44941046","planilla":"16621669","nombre_completo":"VERA FAVERIO NATHALY","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":136,"dni":"32820645","planilla":"14367746","nombre_completo":"PEREZ CARRASCO JOE LUIS","regimen":"728","servicio":"OTORRINOLARINGOLOGIA","cargo":"MEDICO"},
-            {"id":137,"dni":"43352956","planilla":"16618896","nombre_completo":"SALCEDO MALAVER LUIS GUILLERMO","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"MEDICO"},
-            {"id":138,"dni":"32933131","planilla":"15485181","nombre_completo":"ALVA GUARNIZ HUGO NELSON","regimen":"728","servicio":"GASTROENTEROLOGIA","cargo":"MEDICO"},
-            {"id":139,"dni":"32955888","planilla":"14836768","nombre_completo":"SANCHEZ CHU ENRIQUE","regimen":"728","servicio":"OTORRINOLARINGOLOGIA","cargo":"MEDICO"},
-            {"id":140,"dni":"17848296","planilla":"11627421","nombre_completo":"ALAYO CRIBILLEROS SANTOS BERTHA","regimen":"276","servicio":"NUTRICION","cargo":"NUTRICIONISTA"},
-            {"id":141,"dni":"18087798","planilla":"16574783","nombre_completo":"ANHUAMAN LEON GEIDI LORENA","regimen":"728","servicio":"NUTRICION","cargo":"NUTRICIONISTA"},
-            {"id":142,"dni":"44731102","planilla":"16629913","nombre_completo":"MOSTACERO ATO DANIELA PATRICIA","regimen":"728","servicio":"NUTRICION","cargo":"NUTRICIONISTA"},
-            {"id":143,"dni":"73202521","planilla":"16638725","nombre_completo":"QUISPE CUELA TANIA","regimen":"728","servicio":"NUTRICION","cargo":"NUTRICIONISTA"},
-            {"id":144,"dni":"73634672","planilla":"16655182","nombre_completo":"CRUZ SOUZA MILAGROS FIORELLA","regimen":"728","servicio":"NUTRICION","cargo":"NUTRICIONISTA"},
-            {"id":145,"dni":"18070664","planilla":"14008104","nombre_completo":"AGUILAR CACERES OLGA ELIZABET","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":146,"dni":"40519576","planilla":"16128445","nombre_completo":"VALDERRAMA BURGOS MELVIN COSME","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":147,"dni":"23990526","planilla":"12715282","nombre_completo":"JORGE LEON NANCY ELISA","regimen":"276","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":148,"dni":"18114025","planilla":"13866206","nombre_completo":"URTECHO MEDINA EGGARD ROSMERY","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":149,"dni":"18123132","planilla":"12750865","nombre_completo":"ALVAREZ GONZALEZ ELIA INES","regimen":"276","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":150,"dni":"18141258","planilla":"14008077","nombre_completo":"BOCANEGRA CHAVEZ OLENKA MARISELLA","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":151,"dni":"41568716","planilla":"14753302","nombre_completo":"RODRIGUEZ ZAVALETA EVA MARIA","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":152,"dni":"40005649","planilla":"14306069","nombre_completo":"GUARNIZ MEDINA KAREN GIULIANA","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":153,"dni":"18128906","planilla":"16442904","nombre_completo":"ROSALES CASTILLO NORMA ELIZABETH","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":154,"dni":"44638695","planilla":"16620392","nombre_completo":"YACILA MENDOZA ELISABETH MAGALI","regimen":"CAS","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":155,"dni":"18074444","planilla":"14946532","nombre_completo":"LUCAR GONZALES SUSANA AMELIA","regimen":"728","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":156,"dni":"41053588","planilla":"16625802","nombre_completo":"QUISPE CHAVEZ MARIA MILAGROS","regimen":"CAS","servicio":"OBTETRICIA","cargo":"OBSTETRIZ"},
-            {"id":157,"dni":"07852074","planilla":"12911815","nombre_completo":"SANTILLAN CASTILLO IRMA AGUSTINA","regimen":"276","servicio":"ODONTOLOGIA","cargo":"ODONTOLOGO"},
-            {"id":158,"dni":"45897607","planilla":"15918025","nombre_completo":"GARCIA ROJAS ANTHONY HUMBERTO","regimen":"CAS","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":159,"dni":"09440448","planilla":"14008762","nombre_completo":"SAAVEDRA SANCHEZ EDWIN EUGERTO","regimen":"728","servicio":"ODONTOLOGIA","cargo":"ODONTOLOGO"},
-            {"id":160,"dni":"21452851","planilla":"12368456","nombre_completo":"JUNES CHOQUE DE HUAMANI SUSY MARITZA","regimen":"276","servicio":"ODONTOLOGIA","cargo":"ODONTOLOGO"},
-            {"id":161,"dni":"45156523","planilla":"16324674","nombre_completo":"FERNANDEZ AVALOS SILVIA PAOLA","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":162,"dni":"18213999","planilla":"13952301","nombre_completo":"GONZALEZ FERNANDEZ ROXANA MERCEDES","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"PROFESIONAL"},
-            {"id":163,"dni":"18091032","planilla":"13397811","nombre_completo":"IPARRAGUIRRE OLAZABAL RUBEN AQUILES","regimen":"728","servicio":"ENFERMERIA","cargo":"PROFESIONAL"},
-            {"id":164,"dni":"70673055","planilla":"16450220","nombre_completo":"LEON FERNANDEZ ROGER MARTIN","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":165,"dni":"18854203","planilla":"13910843","nombre_completo":"CABRERA DIAZ FREDY WALTER","regimen":"728","servicio":"MEDICINA FAMILIAR Y SALUD COMUNITARIA","cargo":"MEDICO"},
-            {"id":166,"dni":"16805097","planilla":"15442642","nombre_completo":"ALBURQUEQUE TELLO TONY ALEX","regimen":"728","servicio":"UROLOGIA","cargo":"MEDICO"},
-            {"id":167,"dni":"17898144","planilla":"13519226","nombre_completo":"GUERRA RODRIGUEZ JORGE JUAN","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"PROFESIONAL"},
-            {"id":168,"dni":"43675796","planilla":"16128387","nombre_completo":"URTECHO DAVALOS KATHRIN JUDITH","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":169,"dni":"40419543","planilla":"15709013","nombre_completo":"CONTRERAS TAPIA SELENE SUSANA","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":170,"dni":"17902520","planilla":"14660339","nombre_completo":"MORALES SILVA ROSA ELENA","regimen":"276","servicio":"ADMINISTRACION","cargo":"PROFESIONAL"},
-            {"id":171,"dni":"17814977","planilla":"15256979","nombre_completo":"MORENO EUSTAQUIO NANCY ISABEL","regimen":"728","servicio":"ADMINISTRACION","cargo":"PROFESIONAL"},
-            {"id":172,"dni":"03886249","planilla":"13519137","nombre_completo":"HERRERA IMAN VIVIANA MARGIT","regimen":"728","servicio":"LABORATORIO","cargo":"PROFESIONAL TECNICO"},
-            {"id":173,"dni":"00207840","planilla":"12476484","nombre_completo":"SANCHEZ PRETELL TANIA OLENKA","regimen":"276","servicio":"ENFERMERIA","cargo":"PROFESIONAL TECNICO"},
-            {"id":174,"dni":"43613813","planilla":"15982883","nombre_completo":"PORTILLO VELA ENZO BLADIMIR","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO"},
-            {"id":175,"dni":"18147080","planilla":"14008495","nombre_completo":"VIZCONDE CHALAN VIVIANA JESSICA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":176,"dni":"18837773","planilla":"12912598","nombre_completo":"TRIGOSO ASENCIO CARMEN DEL PILAR","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":177,"dni":"18095569","planilla":"14837934","nombre_completo":"FLORIAN TACANGA MARCO ANDRES","regimen":"728","servicio":"ANESTESIOLOGIA","cargo":"MEDICO"},
-            {"id":178,"dni":"18866467","planilla":"14890286","nombre_completo":"COX YEP GUILLERMO AUGUSTO","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":179,"dni":"19229015","planilla":"12914574","nombre_completo":"ALIAGA SAGASTEGUI LILIA MARISA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":180,"dni":"17934038","planilla":"12920698","nombre_completo":"ROBLES SALAZAR TIRZA MATILDE","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":181,"dni":"18111753","planilla":"13910963","nombre_completo":"PUITIZA VEGA EDISA DONALIA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":182,"dni":"42829503","planilla":"16347088","nombre_completo":"GALVEZ MORA CESAR ABRAHAM","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":183,"dni":"17903898","planilla":"12745373","nombre_completo":"BAÑALES PEREZ RUTH AMELIA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":184,"dni":"18015022","planilla":"12934558","nombre_completo":"ASMAT PUENTE YOLANDA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":185,"dni":"18136562","planilla":"12905842","nombre_completo":"GUEVARA LEIVA DE PEREZ MARTINA GENOVEVA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":186,"dni":"43880048","planilla":"14868746","nombre_completo":"RUBIO GUTIERREZ DORI MELVA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":187,"dni":"19083811","planilla":"16147342","nombre_completo":"SALINAS DAVILA JORGE LUIS","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":188,"dni":"17899117","planilla":"16460426","nombre_completo":"FLORES ROMAN FLOR DE MARIA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":189,"dni":"32542221","planilla":"16368358","nombre_completo":"DIAZ SUAREZ SEGUNDO CLEMENTE","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":190,"dni":"18854433","planilla":"15486326","nombre_completo":"ROCHA FERNANDEZ CARLOS HUMBERTO","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":191,"dni":"08881608","planilla":"16490308","nombre_completo":"VIZCARDO HUARANCA LAURA OLINDA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"PROFESIONAL TECNICO"},
-            {"id":192,"dni":"18181392","planilla":"14016355","nombre_completo":"DIAZ PECHE DANIEL ORLANDO","regimen":"728","servicio":"PSICOLOGIA","cargo":"PSICOLOGO"},
-            {"id":193,"dni":"42160723","planilla":"15800600","nombre_completo":"TELLO PRECIADO JUAN GABRIEL","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":194,"dni":"40742221","planilla":"16102581","nombre_completo":"MONDRAGON JUAREZ GUILIANA DEL ROSARIO","regimen":"728","servicio":"PSICOLOGIA","cargo":"PSICOLOGO"},
-            {"id":195,"dni":"17814361","planilla":"14693963","nombre_completo":"DIAZ ALVAREZ ROSA MARIA","regimen":"728","servicio":"FARMACIA","cargo":"QUIMICO FARMACEUTICO"},
-            {"id":196,"dni":"17899895","planilla":"12931820","nombre_completo":"BECERRA BLUME MARIA DEL PILAR","regimen":"276","servicio":"FARMACIA","cargo":"QUIMICO FARMACEUTICO"},
-            {"id":197,"dni":"18205605","planilla":"14194949","nombre_completo":"MUÑOZ SOLANO JESSICA LIZ","regimen":"728","servicio":"FARMACIA","cargo":"QUIMICO FARMACEUTICO"},
-            {"id":198,"dni":"40162882","planilla":"16529935","nombre_completo":"SEDANO GARCIA JUAN CARLOS","regimen":"728","servicio":"FARMACIA","cargo":"QUIMICO FARMACEUTICO"},
-            {"id":199,"dni":"42807990","planilla":"15599544","nombre_completo":"CARRERA MOSTACERO JARY ROXANA","regimen":"728","servicio":"ANESTESIOLOGIA","cargo":"MEDICO"},
-            {"id":200,"dni":"41399639","planilla":"16247605","nombre_completo":"HARO CASTRO GISEL PAOLA","regimen":"728","servicio":"MEDICINA FISICA Y DE REHABILITACION","cargo":"MEDICO"},
-            {"id":201,"dni":"18011780","planilla":"14554527","nombre_completo":"IBAÑEZ BURGOS EDILBERTO LUIS","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":202,"dni":"18097206","planilla":"14945753","nombre_completo":"CEDRON ALVAREZ MILAGRITOS DEL ROCIO","regimen":"728","servicio":"FARMACIA","cargo":"QUIMICO FARMACEUTICO"},
-            {"id":203,"dni":"10832158","planilla":"14859569","nombre_completo":"GALARRETA ULLOA HUMBERTO WILFREDO","regimen":"276","servicio":"ADMISION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":204,"dni":"18214386","planilla":"15311604","nombre_completo":"GELDRES DEL RISCO GERARDO ALFREDO","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":205,"dni":"18034049","planilla":"12928403","nombre_completo":"MORENO FUENTES WILMAR ALFREDO","regimen":"276","servicio":"ADMINISTRACION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":206,"dni":"18179666","planilla":"14163384","nombre_completo":"LARA TARRILLO ELKY ELIZABETH","regimen":"728","servicio":"ADMINISTRACION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":207,"dni":"18866566","planilla":"12912050","nombre_completo":"SIPIRAN GUARNIZ MARIA MAGDALENA","regimen":"276","servicio":"ADMISION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":208,"dni":"18877195","planilla":"12919973","nombre_completo":"GUTIERREZ TIRADO MARCO ANTONIO","regimen":"276","servicio":"ADMISION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":209,"dni":"18889874","planilla":"13397695","nombre_completo":"SANCHEZ CRUZ MARIA ISABEL","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":210,"dni":"17872886","planilla":"12936236","nombre_completo":"DIAZ CHAMOCHUMBI ROGER PASCUAL","regimen":"276","servicio":"ADMINISTRACION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":211,"dni":"18090722","planilla":"13518865","nombre_completo":"HUIMAN GANOZA YURI YUMA","regimen":"728","servicio":"ADMINISTRACION","cargo":"TECNICO ADMINISTRATIVO"},
-            {"id":212,"dni":"18160204","planilla":"14774305","nombre_completo":"RUIZ CARDENAS CICERON","regimen":"728","servicio":"ORTOPEDIA Y TRAUMATOLOGIA","cargo":"MEDICO"},
-            {"id":213,"dni":"03305370","planilla":"11881161","nombre_completo":"TESEN DE GOMEZ MILAGRO CRISTINA","regimen":"276","servicio":"FARMACIA","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":214,"dni":"18174719","planilla":"14008433","nombre_completo":"LIÑAN ARRIAGA CARMEN DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":215,"dni":"18822285","planilla":"12913346","nombre_completo":"VASQUEZ MIRANDA LUZ EMPERATRIZ","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":216,"dni":"17923650","planilla":"12877289","nombre_completo":"ERKEL FORT OLGA PATRICIA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":217,"dni":"17924632","planilla":"12123928","nombre_completo":"LEYVA BARBARAN DORIS AMELIA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":218,"dni":"40568078","planilla":"16265216","nombre_completo":"FLORES RODRIGUEZ CARMEN DEL PILAR","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":219,"dni":"42810426","planilla":"16450042","nombre_completo":"RIVERA RIVERA LUIS CARLOS","regimen":"728","servicio":"ORTOPEDIA Y TRAUMATOLOGIA","cargo":"MEDICO"},
-            {"id":220,"dni":"17881619","planilla":"12396890","nombre_completo":"CASTILLO LESCANO ANA MARIA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":221,"dni":"44797390","planilla":"16450100","nombre_completo":"CALDERON LAU JESSICA YLENIA","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":222,"dni":"46051306","planilla":"16101295","nombre_completo":"MORENO ORTEGA LAURA ALEJANDRA","regimen":"728","servicio":"OFTALMOLOGIA","cargo":"MEDICO"},
-            {"id":223,"dni":"41741857","planilla":"16101442","nombre_completo":"SALDAÑA ESCOBEDO ANAMELVA ESTHER","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":224,"dni":"17941225","planilla":"12909537","nombre_completo":"PUELLES CARDOZO JOSEFINA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":225,"dni":"18016236","planilla":"14913117","nombre_completo":"DIAZ JACOBO ELISEO SABINO","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":226,"dni":"32850306","planilla":"12378087","nombre_completo":"GUTIERREZ LAZARO MARIA NANCY","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":227,"dni":"46134471","planilla":"15993111","nombre_completo":"OLIVARES ALVA MERLY GERLANY","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":228,"dni":"45208694","planilla":"16611235","nombre_completo":"SACHUN PLASENCIA MANUEL ANTONIO","regimen":"728","servicio":"MEDICINA INTERNA","cargo":"MEDICO"},
-            {"id":229,"dni":"41803039","planilla":"16575055","nombre_completo":"REYES HURTADO MABEL","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":230,"dni":"40661036","planilla":"16611056","nombre_completo":"MORI DIAZ SANDRA LISSETH","regimen":"728","servicio":"MEDICINA FAMILIAR Y COMUNITARIA","cargo":"MEDICO"},
-            {"id":231,"dni":"19082938","planilla":"16469123","nombre_completo":"CABRERA JAUREGUI MERY ROSA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":232,"dni":"19559326","planilla":"16390552","nombre_completo":"MIGUEL BOCANEGRA SANTOS","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":233,"dni":"43952954","planilla":"16469483","nombre_completo":"JULCA CASQUIN ANA ISABEL","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":234,"dni":"42208598","planilla":"16636591","nombre_completo":"VILLALOBOS LOPEZ CARINA VANESA","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":235,"dni":"16785312","planilla":"16614046","nombre_completo":"SANTIAGO RIOJA ORLANDO RAUL","regimen":"CAS","servicio":"MEDICINA FAMILIAR Y COMUNITARIA","cargo":"MEDICO"},
-            {"id":236,"dni":"44613053","planilla":"16644543","nombre_completo":"MENDIVIL RUIZ CARLOS FERNANDO","regimen":"728","servicio":"CIRUGIA GENERAL","cargo":"MEDICO"},
-            {"id":237,"dni":"42434444","planilla":"16347413","nombre_completo":"HERMENEGILDO GRADOS LUZ ANGELA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":238,"dni":"19701086","planilla":"15486357","nombre_completo":"CRUZ APONTE SILVIA BETTY","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":239,"dni":"70380626","planilla":"15929031","nombre_completo":"BACILIO URCIA EBERT","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":240,"dni":"45152604","planilla":"16624371","nombre_completo":"ALVARADO CABRERA PATRICIA ESTHER","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":241,"dni":"32522095","planilla":"15483927","nombre_completo":"VALENCIA ARANDA GREGORIO MIGUEL","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":242,"dni":"46021581","planilla":"16621664","nombre_completo":"VELASQUEZ TUFINIO MARGHURIE LIZBETH","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":243,"dni":"45651126","planilla":"16618309","nombre_completo":"CARRION IMAN SONIA JULYZA","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":244,"dni":"45812958","planilla":"16649869","nombre_completo":"CHIROQUE CASTRO LAURA IRENE","regimen":"728","servicio":"MEDICINA FAMILIAR Y SALUD COMUNITARIA","cargo":"MEDICO"},
-            {"id":245,"dni":"42787470","planilla":"16629864","nombre_completo":"BACA PORTALES MARIELA","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":246,"dni":"42214109","planilla":"16629846","nombre_completo":"CARUAJULCA VARGAS IRMA","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":247,"dni":"70015630","planilla":"16264019","nombre_completo":"SANCHEZ MARQUEZ KARLA MATILDE","regimen":"CAS","servicio":"ANESTESIOLOGIA","cargo":"MEDICO"},
-            {"id":248,"dni":"48277917","planilla":"16629861","nombre_completo":"BARON PELAEZ MARIA BERNAVITA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":249,"dni":"47376459","planilla":"16632505","nombre_completo":"RODRIGUEZ LOPEZ YESENIA LIZET","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":250,"dni":"18200728","planilla":"16632502","nombre_completo":"VILLEGAS SANCHEZ FANY PILAR","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":251,"dni":"44784252","planilla":"16636936","nombre_completo":"AMARANTO MENDOZA MANUEL ANDERSON","regimen":"CAS","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":252,"dni":"42979697","planilla":"16653259","nombre_completo":"TELLO GONZALES SANDRA JUDITH","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE ENFERMERIA"},
-            {"id":253,"dni":"18825935","planilla":"12906929","nombre_completo":"LOPEZ DE GUIBERT BENILDA ROSA","regimen":"276","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE SERVICIO ASISTENCIAL"},
-            {"id":254,"dni":"43461293","planilla":"16404117","nombre_completo":"VALDIVIA DIAZ GLENDA PAOLA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE SERVICIO ASISTENCIAL"},
-            {"id":255,"dni":"44035526","planilla":"16631648","nombre_completo":"CRUZ VEGAS VICTORIA RAQUEL","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":256,"dni":"18097462","planilla":"16583840","nombre_completo":"SANTOS MINCHOLA TERESA HAYDEE","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE SERVICIO ASISTENCIAL"},
-            {"id":257,"dni":"42459181","planilla":"16655314","nombre_completo":"BURGOS NUÑEZ MARIA ELISA","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"TECNICO DE SERVICIO ASISTENCIAL"},
-            {"id":258,"dni":"16787908","planilla":"15097703","nombre_completo":"CAMPOS TOCAS DE PEREZ SILVIA ELVIRA","regimen":"728","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":259,"dni":"17864955","planilla":"12928016","nombre_completo":"GONZALES ALVARADO AMADA JULIA","regimen":"276","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":260,"dni":"43331728","planilla":"16636965","nombre_completo":"ROMERO GOICOCHEA MICHAEL ANDRE","regimen":"CAS","servicio":"ANESTESIOLOGIA","cargo":"MEDICO"},
-            {"id":261,"dni":"17872626","planilla":"11845672","nombre_completo":"SERRANO LA BARRERA EMILIA LEONOR","regimen":"276","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":262,"dni":"32970131","planilla":"13790692","nombre_completo":"MALASQUEZ NOLASCO DORIS ELENA","regimen":"728","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":263,"dni":"43997062","planilla":"16578478","nombre_completo":"DELGADO SECLEN JESUS ANILU","regimen":"728","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":264,"dni":"32941673","planilla":"14341971","nombre_completo":"REYES FERNANDEZ ROSA IZELA","regimen":"728","servicio":"LABORATORIO","cargo":"TECNOLOGO MEDICO DE LABORATORIO"},
-            {"id":265,"dni":"76071284","planilla":"16618808","nombre_completo":"RAMIREZ MONCADA KAREN PAOLA","regimen":"CAS","servicio":"RADIOLOGIA","cargo":"TECNOLOGO MEDICO DE RADIOLOGIA"},
-            {"id":266,"dni":"46960941","planilla":"16643994","nombre_completo":"CRUZADO FRANCO ORLANDO ALEXANDER","regimen":"728","servicio":"PEDIATRIA","cargo":"MEDICO"},
-            {"id":267,"dni":"70429955","planilla":"16651882","nombre_completo":"DIAZ PRINCIPE FERNANDO ERNESTO","regimen":"728","servicio":"CIRUGIA BUCAL Y MAXILOFACIAL","cargo":"ODONTOLOGO"},
-            {"id":268,"dni":"41851369","planilla":"15097912","nombre_completo":"MONTALVAN PEREZ DIANA INGRID","regimen":"728","servicio":"FISIOTERAPIA","cargo":"TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB."},
-            {"id":269,"dni":"40466978","planilla":"15485756","nombre_completo":"SANCHEZ MEDINA HAYDY KARINA","regimen":"728","servicio":"FISIOTERAPIA","cargo":"TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB."},
-            {"id":270,"dni":"18092168","planilla":"13069738","nombre_completo":"CHIRINOS LYNCH MONICA PATRICIA","regimen":"728","servicio":"JADYT","cargo":"TRABAJADOR(A) SOCIAL"},
-            {"id":271,"dni":"17811573","planilla":"11846242","nombre_completo":"COLLANTES SILVA HERMELINDA BEATRIZ","regimen":"276","servicio":"JADYT","cargo":"TRABAJADOR(A) SOCIAL"},
-            {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL"}
+            {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Octubre"},
+            {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Mayo"},
+            {"id":3,"dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Julio"},
+            {"id":4,"dni":"40915917","planilla":"16639362","nombre_completo":"MIRANDA MOSTACERO VICKY ELIZABETH","regimen":"CAS","servicio":"ADMINISTRACION","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Setiembre"},
+            {"id":5,"dni":"17865325","planilla":"16390730","nombre_completo":"CAPRISTAN CAMPOS MARIA DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL","mes_rol":"Noviembre"},
+            {"id":41,"dni":"42283343","planilla":"16249016","nombre_completo":"CARRANZA CASTILLO JOSE CARLOS ALBERTO","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"DIGITADOR ASISTENCIAL","mes_rol":"Octubre"},
+            {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL","mes_rol":"Diciembre"}
         ];
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
@@ -751,6 +528,7 @@
             document.getElementById('lblCargo').innerText = trabajadorActual.cargo;
             document.getElementById('lblServicio').innerText = trabajadorActual.servicio;
             document.getElementById('lblRegimen').innerText = `D.L. ${trabajadorActual.regimen}`;
+            document.getElementById('lblMesRol').innerText = trabajadorActual.mes_rol || "No asignado";
 
             if (!KARDEX_MEMORIA[trabajadorActual.id]) {
                 KARDEX_MEMORIA[trabajadorActual.id] = [
@@ -785,16 +563,13 @@
                 }
 
                 // REGLA DE AUDITORÍA DE ESSALUD (DOMINGOS):
-                // 15 Días -> Mínimo 2 Domingos
-                // 21 Días -> Mínimo 3 Domingos
-                // 30 Días -> Mínimo 4 Domingos
                 let alertaDomingoHTML = "";
                 if (diasGozadosTotales >= 30 && domingosEnHistorial < 4) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 4 domingos por 30 días">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
                 } else if (diasGozadosTotales >= 21 && domingosEnHistorial < 3) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 3 domingos por 21 días">⚠️ Falta 1 Domingo (${domingosEnHistorial}/3)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/3)</span>`;
                 } else if (diasGozadosTotales >= 15 && domingosEnHistorial < 2) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 2 domingos por 15 días">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -851,7 +626,7 @@
 
                 const totalPend = pend2026 + pendAnteriores;
                 if (totalPend > 0) {
-                    alert(`🚨 REGISTRO NO PERMITIDO:\nEl servidor ${trabajadorActual.nombre_completo} aún cuenta con ${totalPend} DÍAS PENDIENTES en el periodo actual / anteriores.\n\nPor norma laboral, debe agotar sus días pendientes antes de registrar o adelantar vacaciones del periodo 2027.`);
+                    alert(`🚨 REGISTRO DENEGADO:\nEl servidor ${trabajadorActual.nombre_completo} aún cuenta con ${totalPend} DÍAS PENDIENTES en el periodo actual / anteriores.\n\nPor norma laboral, debe agotar sus días pendientes antes de registrar o adelantar vacaciones del periodo 2027.`);
                     document.getElementById('kardexAno').value = "2026";
                 }
             }
@@ -1068,7 +843,8 @@
                 planilla: document.getElementById('regPlanilla').value.trim(),
                 regimen: document.getElementById('regRegimen').value,
                 servicio: document.getElementById('regServicio').value.trim().toUpperCase(),
-                cargo: document.getElementById('regCargo').value.trim().toUpperCase()
+                cargo: document.getElementById('regCargo').value.trim().toUpperCase(),
+                mes_rol: document.getElementById('regMesRol').value
             };
 
             TRABAJADORES_BASE.unshift(nuevo);
@@ -1083,7 +859,8 @@
                     planilla: nuevo.planilla,
                     regimen: nuevo.regimen,
                     servicio: nuevo.servicio,
-                    cargo: nuevo.cargo
+                    cargo: nuevo.cargo,
+                    mes_rol: nuevo.mes_rol
                 })
             }).catch(e => console.error("Sincronización diferida"));
 
@@ -1102,6 +879,7 @@
             document.getElementById('editRegimen').value = trabajadorActual.regimen;
             document.getElementById('editServicio').value = trabajadorActual.servicio;
             document.getElementById('editCargo').value = trabajadorActual.cargo;
+            document.getElementById('editMesRol').value = trabajadorActual.mes_rol || "Octubre";
             document.getElementById('modalEditarTrabajador').classList.remove('hidden');
         }
 
@@ -1119,6 +897,7 @@
             trabajadorActual.regimen = document.getElementById('editRegimen').value;
             trabajadorActual.servicio = document.getElementById('editServicio').value.trim().toUpperCase();
             trabajadorActual.cargo = document.getElementById('editCargo').value.trim().toUpperCase();
+            trabajadorActual.mes_rol = document.getElementById('editMesRol').value;
 
             guardarStorage();
             cerrarModalEditar();
@@ -1132,7 +911,8 @@
                     planilla: trabajadorActual.planilla,
                     regimen: trabajadorActual.regimen,
                     servicio: trabajadorActual.servicio,
-                    cargo: trabajadorActual.cargo
+                    cargo: trabajadorActual.cargo,
+                    mes_rol: trabajadorActual.mes_rol
                 })
             }).catch(e => console.error("Sincronización diferida"));
 
@@ -1141,30 +921,33 @@
             cargarTrabajador(trabajadorActual.id);
         }
 
-        // ELIMINAR SERVIDOR COMPLETO
+        // ELIMINAR SERVIDOR COMPLETO CON CONFIRMACIÓN DOBLE
         async function eliminarTrabajadorActual() {
             if (!trabajadorActual) return;
-            const confirmacion = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} de la base de datos de la institución?`);
-            if (confirmacion) {
-                TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
-                delete KARDEX_MEMORIA[trabajadorActual.id];
-                guardarStorage();
+            const confirmacion1 = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}] de la base de datos?`);
+            if (confirmacion1) {
+                const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción Borrará todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
+                if (confirmacion2) {
+                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
+                    delete KARDEX_MEMORIA[trabajadorActual.id];
+                    guardarStorage();
 
-                fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
-                    method: "DELETE",
-                    headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
+                    fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                        method: "DELETE",
+                        headers: getHeaders()
+                    }).catch(e => console.error("Sincronización diferida"));
 
-                listaTrabajadores = TRABAJADORES_BASE;
-                alert("Trabajador eliminado con éxito.");
-                renderDesplegable(listaTrabajadores);
-                if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                    listaTrabajadores = TRABAJADORES_BASE;
+                    alert("Trabajador eliminado de la base con éxito.");
+                    renderDesplegable(listaTrabajadores);
+                    if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                }
             }
         }
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES EN TIEMPO REAL
+        // BUSCADORES
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) return renderDesplegable(TRABAJADORES_BASE);
