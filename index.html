@@ -184,7 +184,7 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
-                <!-- INDICADORES -->
+                <!-- INDICADORES PRINCIPALES -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                         <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
@@ -204,18 +204,35 @@
                     </div>
                 </div>
 
-                <!-- PROGRAMACIÓN Y ACUMULACIÓN DE VACACIONES CON AUDITORÍA DE DOMINGOS -->
+                <!-- CONTROL AUDITORÍA DE DOMINGOS NORMATIVOS -->
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3 text-xs items-center">
+                    <div class="md:col-span-2 space-y-1">
+                        <p class="font-bold text-amber-900 flex items-center gap-1.5 text-sm">
+                            <i class="fa-solid fa-calculator"></i> Auditoría de Domingos Normativos (Regla EsSalud)
+                        </p>
+                        <p id="lblExplicacionDomingos" class="text-amber-800 text-[11px]">
+                            Seleccione un servidor para auditar la relación entre días gozados y domingos contados.
+                        </p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-amber-300 text-center space-y-1">
+                        <p class="text-[11px] text-slate-500 font-semibold">Domingos Tomados / Requeridos:</p>
+                        <p id="lblEstadoDomingosBox" class="text-base font-bold text-amber-900">0 / 0 Domingos</p>
+                        <p id="lblDomingosFaltantes" class="text-[10px] font-bold text-emerald-700">✓ Conforme</p>
+                    </div>
+                </div>
+
+                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
-                        Programación, Fraccionamiento y Auditoría de Domingos
+                        Programación y Fraccionamiento con Calendario
                     </h3>
 
                     <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-4 rounded-lg border space-y-3 text-xs">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-slate-600 mb-1 font-semibold">Año / Periodo Vacacional:</label>
-                                <select id="kardexAno" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
+                                <select id="kardexAno" onchange="actualizarContadorDomingos()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
                                     <option value="2022">2022</option>
                                     <option value="2023">2023</option>
                                     <option value="2024">2024</option>
@@ -261,7 +278,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX CON BOTONES COMPLETOS (EDITAR Y ELIMINAR) Y ALERTAS DE DOMINGOS -->
+                    <!-- TABLA KARDEX AUDITADO -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -757,7 +774,7 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
-                // CONTAR DOMINGOS EN EL TEXTO DEL HISTORIAL COMPLETO
+                // CONTAR DOMINGOS EN EL HISTORIAL
                 let domingosEnHistorial = 0;
                 const matches = (k.detalle_fechas || "").match(/Incluye (\d+) domingos?/g);
                 if (matches) {
@@ -767,17 +784,14 @@
                     });
                 }
 
-                // REGLA DE AUDITORÍA DE ESSALUD (DOMINGOS):
-                // 15 Días -> Mínimo 2 Domingos
-                // 21 Días -> Mínimo 3 Domingos
-                // 30 Días -> Mínimo 4 Domingos
+                // REGLA DE AUDITORÍA DE DOMINGOS (15d=2, 21d=3, 30d=4)
                 let alertaDomingoHTML = "";
                 if (diasGozadosTotales >= 30 && domingosEnHistorial < 4) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 30 días gozados (4 semanas) se requiere MÍNIMO 4 domingos">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 4 domingos por 30 días">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
                 } else if (diasGozadosTotales >= 21 && domingosEnHistorial < 3) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 21 días gozados (3 semanas) se requiere MÍNIMO 3 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/3)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 3 domingos por 21 días">⚠️ Falta 1 Domingo (${domingosEnHistorial}/3)</span>`;
                 } else if (diasGozadosTotales >= 15 && domingosEnHistorial < 2) {
-                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Normativa: Por 15 días gozados (2 semanas) se requiere MÍNIMO 2 domingos">⚠️ Falta 1 Domingo (Tiene ${domingosEnHistorial}/2)</span>`;
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Requiere 2 domingos por 15 días">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -796,7 +810,7 @@
                             <button onclick="editarTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Editar historial de este año">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar
                             </button>
-                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar todo el registro de este año">
+                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar este año por completo">
                                 <i class="fa-solid fa-trash"></i> Eliminar
                             </button>
                             <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold text-[10px]" title="Limpiar y volver a 30 días libres">
@@ -812,6 +826,48 @@
             document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
             document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
             document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
+
+            actualizarContadorDomingos();
+        }
+
+        // ACTUALIZAR TARJETA SUPERIOR DE AUDITORÍA DE DOMINGOS
+        function actualizarContadorDomingos() {
+            if (!trabajadorActual) return;
+            const anoSeleccionado = parseInt(document.getElementById('kardexAno').value);
+            const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            const k = kardexData.find(x => x.periodo_ano === anoSeleccionado);
+
+            let diasGozados = k ? (30 - k.dias_pendientes) : 0;
+            let domingosTomados = 0;
+
+            const matches = ((k ? k.detalle_fechas : "") || "").match(/Incluye (\d+) domingos?/g);
+            if (matches) {
+                matches.forEach(m => {
+                    const num = parseInt(m.replace(/\D/g, ''));
+                    if (!isNaN(num)) domingosTomados += num;
+                });
+            }
+
+            let domingosRequeridos = 0;
+            if (diasGozados >= 30) domingosRequeridos = 4;
+            else if (diasGozados >= 21) domingosRequeridos = 3;
+            else if (diasGozados >= 15) domingosRequeridos = 2;
+            else if (diasGozados > 0) domingosRequeridos = 1;
+
+            let domingosRestantes = domingosRequeridos - domingosTomados;
+            if (domingosRestantes < 0) domingosRestantes = 0;
+
+            document.getElementById('lblEstadoDomingosBox').innerText = `${domingosTomados} / ${domingosRequeridos} Domingos`;
+
+            if (domingosRestantes > 0) {
+                document.getElementById('lblDomingosFaltantes').innerText = `⚠️ Le resta incluir ${domingosRestantes} domingo(s) para la norma`;
+                document.getElementById('lblDomingosFaltantes').className = "text-[10px] font-bold text-amber-800";
+            } else {
+                document.getElementById('lblDomingosFaltantes').innerText = `✓ Conforme según días acumulados (${diasGozados} días)`;
+                document.getElementById('lblDomingosFaltantes').className = "text-[10px] font-bold text-emerald-700";
+            }
+
+            document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días gozados.`;
         }
 
         // CÁLCULO DE DÍAS Y DOMINGOS EN TIEMPO REAL AL ELEGIR FECHAS EN EL CALENDARIO
@@ -876,6 +932,7 @@
                 document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
                 document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || '';
                 document.getElementById('lblDiasCalculados').innerText = `${30 - k.dias_pendientes} Días`;
+                actualizarContadorDomingos();
                 window.scrollTo({ top: 200, behavior: 'smooth' });
             }
         }
