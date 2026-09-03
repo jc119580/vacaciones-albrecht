@@ -101,21 +101,21 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[11px] text-blue-200 mb-1">Filtrar por Mes Rol:</label>
-                            <select id="selectFiltroMesRol" onchange="filtrarPorMesRol()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                            <label class="block text-[11px] text-blue-200 mb-1">Mes de Salida Real (Convenios):</label>
+                            <select id="selectFiltroMesReal" onchange="filtrarPorMesReal()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
                                 <option value="TODOS">-- Todos los Meses --</option>
-                                <option value="Enero">Enero</option>
-                                <option value="Febrero">Febrero</option>
-                                <option value="Marzo">Marzo</option>
-                                <option value="Abril">Abril</option>
-                                <option value="Mayo">Mayo</option>
-                                <option value="Junio">Junio</option>
-                                <option value="Julio">Julio</option>
-                                <option value="Agosto">Agosto</option>
-                                <option value="Setiembre">Setiembre</option>
-                                <option value="Octubre">Octubre</option>
-                                <option value="Noviembre">Noviembre</option>
-                                <option value="Diciembre">Diciembre</option>
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
                             </select>
                         </div>
                         <div>
@@ -312,7 +312,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-slate-600 mb-1 font-semibold">Historial Autogenerado de Tramos (Calculado de Forma Automática):</label>
+                            <label class="block text-slate-600 mb-1 font-semibold">Historial Autogenerado de Tramos (Ordenado Cronológicamente):</label>
                             <input type="text" id="kardexFechasDetalle" readonly class="w-full border rounded p-2 bg-slate-100 outline-none font-medium text-slate-700">
                         </div>
 
@@ -330,8 +330,8 @@
                                 <tr class="bg-slate-100 text-slate-600 border-b">
                                     <th class="p-2 border">Año / Periodo</th>
                                     <th class="p-2 border">Derecho Base</th>
-                                    <th class="p-2 border">Días Gozados / Programados</th>
-                                    <th class="p-2 border">Historial Completo de Tramos / Fechas</th>
+                                    <th class="p-2 border">Días Computados (Gozados / Programados)</th>
+                                    <th class="p-2 border">Historial Completo Cronológico de Tramos / Fechas</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
                                     <th class="p-2 border">Acciones</th>
                                 </tr>
@@ -545,7 +545,7 @@
                     document.getElementById('boxAccionesAdmin').classList.remove('hidden');
                 }
 
-                // CARGAR TODOS LOS TRABAJADORES (TANTO PARA RRHH COMO PARA VISORES/JEFATURAS)
+                // CARGA DE LOS 272 TRABAJADORES GARANTIZADA PARA RRHH Y JEFATURAS
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
                 if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
@@ -568,15 +568,57 @@
             });
         }
 
-        function filtrarPorMesRol() {
-            const mesElegido = document.getElementById('selectFiltroMesRol').value;
-            if (mesElegido === "TODOS") {
+        // FILTRO POR MES REAL DE SALIDA (TRAMOS POR CONVENIO)
+        function filtrarPorMesReal() {
+            const mesNum = document.getElementById('selectFiltroMesReal').value;
+            if (mesNum === "TODOS") {
                 listaTrabajadores = TRABAJADORES_BASE;
             } else {
-                listaTrabajadores = TRABAJADORES_BASE.filter(t => (t.mes_rol || "Octubre").toLowerCase() === mesElegido.toLowerCase());
+                listaTrabajadores = TRABAJADORES_BASE.filter(t => {
+                    const kardex = KARDEX_MEMORIA[t.id] || [];
+                    for (let k of kardex) {
+                        if (k.detalle_fechas) {
+                            const tramos = k.detalle_fechas.split(" | ");
+                            for (let tramo of tramos) {
+                                const matchIni = tramo.match(/Del (\d{1,2})\/(\d{1,2})\/\d{4}/);
+                                if (matchIni && matchIni[2].padStart(2, '0') === mesNum) return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
             }
             renderDesplegable(listaTrabajadores);
             if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+        }
+
+        function parseFechaLocal(strFecha) {
+            const partes = strFecha.split('/');
+            if (partes.length === 3) {
+                return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+            }
+            return null;
+        }
+
+        // ORDENAMIENTO CRONOLÓGICO DE TRAMOS
+        function ordenarDetalleCronologico(detalleTexto) {
+            if (!detalleTexto || !detalleTexto.includes(" | ")) return detalleTexto;
+            
+            const tramos = detalleTexto.split(" | ");
+            const tramosConFecha = [];
+
+            tramos.forEach(t => {
+                const matchIni = t.match(/Del (\d{1,2}\/\d{1,2}\/\d{4})/);
+                if (matchIni) {
+                    const fObj = parseFechaLocal(matchIni[1]);
+                    tramosConFecha.append ? tramosConFecha.append({ fecha: fObj, texto: t }) : tramosConFecha.push({ fecha: fObj, texto: t });
+                } else {
+                    tramosConFecha.push({ fecha: new Date(0), texto: t });
+                }
+            });
+
+            tramosConFecha.sort((a, b) => a.fecha - b.fecha);
+            return tramosConFecha.map(x => x.texto).join(" | ");
         }
 
         function cargarTrabajador(id) {
@@ -615,7 +657,10 @@
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
-                // EVALUAR SI EL TRAMO ES FUTURO RESPECTO A HOY
+                // ORDENAR CRONOLÓGICAMENTE EL HISTORIAL
+                k.detalle_fechas = ordenarDetalleCronologico(k.detalle_fechas);
+
+                // CLASIFICAR SI EL TRAMO ES GOZADO O PROGRAMADO A FUTURO
                 let esFuturo = false;
                 if (k.detalle_fechas) {
                     const matchFin = k.detalle_fechas.match(/al (\d{1,2}\/\d{1,2}\/\d{4})/);
@@ -811,14 +856,6 @@
             document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días computados.`;
         }
 
-        function parseFechaLocal(strFecha) {
-            const partes = strFecha.split('/');
-            if (partes.length === 3) {
-                return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
-            }
-            return null;
-        }
-
         // CÁLCULO DE DÍAS Y CONTROL DE SOLAPAMIENTO DE FECHAS
         function calcularDiasFechas() {
             const fIniVal = document.getElementById('fechaInicio').value;
@@ -897,7 +934,7 @@
                 ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
                 : textoNuevoTramo;
 
-            document.getElementById('kardexFechasDetalle').value = historialTexto;
+            document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
         }
 
         // ELIMINAR REGISTRO COMPLETO DE UN PERIODO ESPECÍFICO
