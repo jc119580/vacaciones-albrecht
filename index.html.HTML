@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Vacaciones - Hospital II Albrecht</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+    <!-- PANTALLA DE INICIO DE SESIÓN -->
+    <div id="pantallaLogin" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-800 text-3xl mb-2">
+                    <i class="fa-solid fa-hospital-user"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-800">Hospital II Albrecht</h1>
+                <p class="text-xs text-slate-500">Sistema Integrado de Gestión y Auditoría de Vacaciones</p>
+            </div>
+
+            <form onsubmit="iniciarSesion(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Nombre de Usuario:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="text" id="loginUsuario" required placeholder="RRHH O JEFATURAS" class="w-full pl-9 pr-3 p-2.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600 uppercase font-semibold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Contraseña:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-10 p-2.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none">
+                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorLogin" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded border border-red-200">
+                    Usuario o contraseña incorrectos.
+                </div>
+
+                <button type="submit" id="btnIngresar" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition-colors text-sm">
+                    Ingresar al Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL DEL SISTEMA -->
+    <div id="pantallaSistema" class="hidden">
+        <header class="bg-blue-800 text-white shadow-lg p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid text-2xl fa-hospital-user"></i>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">EsSalud - Red Asistencial La Libertad</h1>
+                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-xs">
+                    <div class="text-right">
+                        <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
+                        <p id="lblUsuarioRol" class="text-blue-200 text-[11px]">-</p>
+                    </div>
+                    <button onclick="cerrarSesion()" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded font-bold shadow transition-colors">
+                        <i class="fa-solid fa-right-from-bracket"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- COLUMNA IZQUIERDA -->
+            <section class="lg:col-span-1 space-y-6">
+                
+                <!-- BUSCADOR -->
+                <div class="bg-blue-900 text-white rounded-xl shadow-md p-4 border border-blue-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscador de Personal
+                        </p>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">0 En la Base</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-blue-200 mb-1">Buscar por DNI:</label>
+                            <input type="text" id="txtBuscarDNI" maxlength="8" placeholder="Ej. 17884233" class="w-full text-xs font-mono font-bold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-blue-200 mb-1">Buscar por Planilla:</label>
+                            <input type="text" id="txtBuscarPlanilla" placeholder="Ej. 2616671" class="w-full text-xs font-mono font-bold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] text-blue-200 mb-1">Filtrar por Nombre / Apellido:</label>
+                        <input type="text" id="txtFiltroNombre" placeholder="Escribe las primeras letras..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none mb-2">
+                        
+                        <select id="selectTrabajador" class="w-full text-xs font-semibold rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none shadow">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- FICHA DEL SERVIDOR -->
+                <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Servidor Público</span>
+                        <span id="lblRegimen" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-300">-</span>
+                    </div>
+                    
+                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800 border-b pb-2 mb-3">-</h2>
+
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div><p class="text-slate-500">DNI:</p><p id="lblDni" class="font-semibold text-slate-700">-</p></div>
+                        <div><p class="text-slate-500">N° Planilla:</p><p id="lblPlanilla" class="font-bold text-blue-800">-</p></div>
+                        <div><p class="text-slate-500">Cargo:</p><p id="lblCargo" class="font-semibold text-slate-700">-</p></div>
+                        <div><p class="text-slate-500">Servicio:</p><p id="lblServicio" class="font-semibold text-slate-700">-</p></div>
+                    </div>
+
+                    <div id="boxAccionesAdmin" class="hidden mt-4 pt-3 border-t text-right">
+                        <button onclick="eliminarTrabajadorActual()" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-1.5 rounded text-xs transition-colors">
+                            <i class="fa-solid fa-trash"></i> Eliminar Trabajador
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MÓDULO AGREGAR PERSONAL -->
+                <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-user-plus text-emerald-600"></i>
+                        1. Registrar / Agregar Nuevo Personal
+                    </h3>
+                    <form id="formNuevoTrabajador" onsubmit="guardarNuevoTrabajador(event)" class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-slate-600 mb-0.5">Apellidos y Nombres Completo:</label>
+                            <input type="text" id="regNombre" required placeholder="Ej. ALVAREZ SANCHEZ PEDRO" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">DNI:</label>
+                                <input type="text" id="regDni" maxlength="8" required placeholder="8 dígitos" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">N° Planilla:</label>
+                                <input type="text" id="regPlanilla" required placeholder="Ej. 2616671" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 font-mono">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">Régimen Laboral:</label>
+                                <select id="regRegimen" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="728">D.L. 728</option>
+                                    <option value="276">D.L. 276</option>
+                                    <option value="CAS">CAS (1057)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 mb-0.5">Servicio / Área:</label>
+                                <input type="text" id="regServicio" required placeholder="Ej. ENFERMERIA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
+                            <input type="text" id="regCargo" required placeholder="Ej. ENFERMERA ESPECIALISTA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition-colors text-xs">
+                            + Agregar Personal a la Base Nube
+                        </button>
+                    </form>
+                </div>
+
+            </section>
+
+            <!-- COLUMNA DERECHA -->
+            <section class="lg:col-span-2 space-y-6">
+
+                <!-- INDICADORES -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
+                        <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">-</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <p class="text-xs text-slate-500">Deuda Años Anteriores</p>
+                        <p id="lblDeudaAnteriores" class="text-xl font-bold text-red-600">-</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <p class="text-xs text-slate-500">Total Días Pendientes</p>
+                        <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">-</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <p class="text-xs text-slate-500">Adelanto 2027</p>
+                        <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">-</p>
+                    </div>
+                </div>
+
+                <!-- KARDEX Y CONFIGURACIÓN -->
+                <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-600"></i>
+                        Kardex Vacacional Auditado por Años
+                    </h3>
+
+                    <form id="formKardexAno" onsubmit="guardarTramoAno(event)" class="bg-slate-50 p-3 rounded-lg border grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                        <div>
+                            <label class="block text-slate-600 mb-1 font-semibold">Año / Periodo:</label>
+                            <select id="kardexAno" class="w-full border rounded p-1.5 bg-white outline-none">
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1 font-semibold">Días Pendientes:</label>
+                            <input type="number" id="kardexDiasPendientes" min="0" max="30" value="30" required class="w-full border rounded p-1.5 bg-white outline-none font-bold">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-slate-600 mb-1 font-semibold">Detalle Fechas / Meses Gozados:</label>
+                            <input type="text" id="kardexFechasDetalle" placeholder="Ej. 01/03/2025 al 30/03/2025 (30 días)" class="w-full border rounded p-1.5 bg-white outline-none">
+                        </div>
+                        <div class="md:col-span-4 text-right">
+                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-1.5 rounded shadow text-xs">
+                                <i class="fa-solid fa-pen-to-square"></i> Modificar / Registrar Año en Kardex
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 border-b">
+                                    <th class="p-2 border">Año / Periodo</th>
+                                    <th class="p-2 border">Derecho Base</th>
+                                    <th class="p-2 border">Gozados</th>
+                                    <th class="p-2 border">Fechas / Meses Gozados</th>
+                                    <th class="p-2 border">Saldo Pendiente</th>
+                                    <th class="p-2 border">Estado Auditoría</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyKardex">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT DE CONEXIÓN Y CREDENCIALES DIRECTAS -->
+    <script>
+        const SUPABASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // CREDENCIALES LOCALES DE RESPALDO PARA LOGIN GARANTIZADO
+        const USUARIOS_LOCALES = [
+            { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
+            { id: 2, username: "ENFERMERIA", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Enfermería", rol: "VISOR", cargo_jefatura: "Departamento de Enfermería" },
+            { id: 3, username: "JADYT", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Ayuda al Diagnóstico", rol: "VISOR", cargo_jefatura: "Departamento de JADYT" },
+            { id: 4, username: "JMQX", password_hash: "Jefatura2026", nombre_completo: "Jefatura Médico Quirúrgica", rol: "VISOR", cargo_jefatura: "Departamento de JMQX" },
+            { id: 5, username: "PLANEAMIENTO", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Planeamiento", rol: "VISOR", cargo_jefatura: "Oficina de Planeamiento" },
+            { id: 6, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
+        ];
+
+        let usuarioSesion = null;
+        let listaTrabajadores = [];
+        let trabajadorActual = null;
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                pwdInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        async function iniciarSesion(e) {
+            e.preventDefault();
+            document.getElementById('errorLogin').classList.add('hidden');
+            const usr = document.getElementById('loginUsuario').value.trim().toUpperCase();
+            const pwd = document.getElementById('loginPassword').value.trim();
+
+            let usuarioValido = null;
+
+            // Intentar autenticación vía Supabase
+            try {
+                const { data } = await _supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('username', usr)
+                    .eq('password_hash', pwd);
+                
+                if (data && data.length > 0) {
+                    usuarioValido = data[0];
+                }
+            } catch (err) {
+                console.log("Servidor ocupado, usando autenticación directa...");
+            }
+
+            // Si falla Supabase, validar con la tabla local integrada
+            if (!usuarioValido) {
+                usuarioValido = USUARIOS_LOCALES.find(u => u.username === usr && u.password_hash === pwd);
+            }
+
+            if (!usuarioValido) {
+                document.getElementById('errorLogin').classList.remove('hidden');
+            } else {
+                usuarioSesion = usuarioValido;
+                document.getElementById('pantallaLogin').classList.add('hidden');
+                document.getElementById('pantallaSistema').classList.remove('hidden');
+
+                document.getElementById('lblUsuarioNombre').innerText = usuarioSesion.nombre_completo;
+                document.getElementById('lblUsuarioRol').innerText = `${usuarioSesion.rol} - ${usuarioSesion.cargo_jefatura || 'RRHH'}`;
+
+                if (usuarioSesion.rol === 'VISOR') {
+                    document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
+                    document.getElementById('formKardexAno').classList.add('hidden');
+                    document.getElementById('boxAccionesAdmin').classList.add('hidden');
+                } else {
+                    document.getElementById('moduloRegistrarPersonal').classList.remove('hidden');
+                    document.getElementById('formKardexAno').classList.remove('hidden');
+                    document.getElementById('boxAccionesAdmin').classList.remove('hidden');
+                }
+
+                cargarTrabajadoresDesdeNube();
+            }
+        }
+
+        function cerrarSesion() {
+            location.reload();
+        }
+
+        async function cargarTrabajadoresDesdeNube() {
+            try {
+                const { data, error } = await _supabase
+                    .from('trabajadores')
+                    .select('*')
+                    .order('nombre_completo', { ascending: true });
+
+                if (!error && data) {
+                    listaTrabajadores = data;
+                    renderDesplegable(listaTrabajadores);
+                    if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                }
+            } catch(e) {
+                console.log("Modo inicial en espera de data...");
+            }
+        }
+
+        function renderDesplegable(lista) {
+            const select = document.getElementById('selectTrabajador');
+            select.innerHTML = "";
+            document.getElementById('lblTotalRegistrados').innerText = `${lista.length} En la Base`;
+            lista.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.innerText = `${t.nombre_completo} [DNI: ${t.dni || '-'}] [Planilla: ${t.planilla || '-'}]`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function cargarTrabajador(id) {
+            trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
+            if (!trabajadorActual) return;
+
+            document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
+            document.getElementById('lblDni').innerText = trabajadorActual.dni || "Sin registro";
+            document.getElementById('lblPlanilla').innerText = trabajadorActual.planilla || "Sin registro";
+            document.getElementById('lblCargo').innerText = trabajadorActual.cargo;
+            document.getElementById('lblServicio').innerText = trabajadorActual.servicio;
+            document.getElementById('lblRegimen').innerText = `D.L. ${trabajadorActual.regimen}`;
+
+            const { data: kardexData } = await _supabase
+                .from('kardex_vacaciones')
+                .select('*')
+                .eq('trabajador_id', trabajadorActual.id);
+
+            const tbody = document.getElementById('tbodyKardex');
+            tbody.innerHTML = "";
+
+            let saldo2026 = 30;
+            let deudaAnteriores = 0;
+
+            if (kardexData && kardexData.length > 0) {
+                kardexData.forEach(k => {
+                    if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
+                    if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b";
+                    tr.innerHTML = `
+                        <td class="p-2 border font-bold">${k.periodo_ano}</td>
+                        <td class="p-2 border">30 Días</td>
+                        <td class="p-2 border">${30 - k.dias_pendientes} Días</td>
+                        <td class="p-2 border text-slate-700">${k.detalle_fechas || 'Sin registro'}</td>
+                        <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
+                        <td class="p-2 border text-slate-500">${k.dias_pendientes === 0 ? 'Cerrado' : 'Pendiente'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
+            document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
+            document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
+            document.getElementById('lblAdelanto2027').innerText = `0 Días`;
+        }
+
+        async function guardarNuevoTrabajador(e) {
+            e.preventDefault();
+            const nuevo = {
+                nombre_completo: document.getElementById('regNombre').value.trim().toUpperCase(),
+                dni: document.getElementById('regDni').value.trim(),
+                planilla: document.getElementById('regPlanilla').value.trim(),
+                regimen: document.getElementById('regRegimen').value,
+                servicio: document.getElementById('regServicio').value.trim().toUpperCase(),
+                cargo: document.getElementById('regCargo').value.trim().toUpperCase()
+            };
+
+            const { data, error } = await _supabase.from('trabajadores').insert([nuevo]).select();
+
+            if (!error && data) {
+                alert(`¡Trabajador ${nuevo.nombre_completo} registrado en la nube!`);
+                document.getElementById('formNuevoTrabajador').reset();
+                cargarTrabajadoresDesdeNube();
+            } else {
+                alert("Error al registrar: Verifique si el DNI o Planilla ya existe.");
+            }
+        }
+
+        async function guardarTramoAno(e) {
+            e.preventDefault();
+            if (!trabajadorActual) return;
+
+            const kardex = {
+                trabajador_id: trabajadorActual.id,
+                periodo_ano: parseInt(document.getElementById('kardexAno').value),
+                dias_pendientes: parseInt(document.getElementById('kardexDiasPendientes').value),
+                detalle_fechas: document.getElementById('kardexFechasDetalle').value.trim(),
+                actualizado_por: usuarioSesion.id
+            };
+
+            const { error } = await _supabase.from('kardex_vacaciones').upsert([kardex]);
+
+            if (!error) {
+                alert(`¡Kardex del periodo ${kardex.periodo_ano} actualizado!`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        async function eliminarTrabajadorActual() {
+            if (!trabajadorActual) return;
+            if (confirm(`¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} de la base de datos?`)) {
+                const { error } = await _supabase.from('trabajadores').delete().eq('id', trabajadorActual.id);
+                if (!error) {
+                    alert("Trabajador eliminado con éxito.");
+                    cargarTrabajadoresDesdeNube();
+                }
+            }
+        }
+
+        document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
+
+        // BUSCADORES
+        document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
+            const dni = e.target.value.trim();
+            if (!dni) return renderDesplegable(listaTrabajadores);
+            const enc = listaTrabajadores.find(t => t.dni && t.dni.startsWith(dni));
+            if (enc) {
+                renderDesplegable([enc]);
+                cargarTrabajador(enc.id);
+            }
+        });
+
+        document.getElementById('txtBuscarPlanilla').addEventListener('input', function(e) {
+            const plan = e.target.value.trim();
+            if (!plan) return renderDesplegable(listaTrabajadores);
+            const enc = listaTrabajadores.find(t => t.planilla && t.planilla.startsWith(plan));
+            if (enc) {
+                renderDesplegable([enc]);
+                cargarTrabajador(enc.id);
+            }
+        });
+
+        document.getElementById('txtFiltroNombre').addEventListener('input', function(e) {
+            const txt = e.target.value.toLowerCase().trim();
+            const filt = listaTrabajadores.filter(t => t.nombre_completo.toLowerCase().includes(txt));
+            renderDesplegable(filt);
+            if (filt.length > 0) cargarTrabajador(filt[0].id);
+        });
+    </script>
+</body>
+</html>
