@@ -422,7 +422,7 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE RESTAURACIÓN Y DATOS EN VIVO -->
+    <!-- SCRIPT COMPLETO CON CONEXIÓN EN TIEMPO REAL Y BUSCADORES RESTAURADOS -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -436,7 +436,6 @@
             { id: 6, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
         ];
 
-        // LISTA MAESTRA INICIAL RESTAURADA
         const MAESTRO_INICIAL = [
             {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Octubre"},
             {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Mayo"},
@@ -481,7 +480,6 @@
             }
         }
 
-        // DESCARGA DATOS DE LA NUBE O USA LA BASE LOCAL
         async function cargarDatosNube() {
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
@@ -599,6 +597,14 @@
             select.innerHTML = "";
             document.getElementById('lblTotalRegistrados').innerText = `${lista.length} En la Base`;
 
+            if (lista.length === 0) {
+                const opt = document.createElement('option');
+                opt.innerText = "-- Sin coincidencias --";
+                select.appendChild(opt);
+                limpiarVistaPantalla();
+                return;
+            }
+
             lista.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.id;
@@ -607,9 +613,30 @@
             });
         }
 
+        function limpiarVistaPantalla() {
+            trabajadorActual = null;
+            document.getElementById('lblNombre').innerText = "Sin resultados";
+            document.getElementById('lblDni').innerText = "-";
+            document.getElementById('lblPlanilla').innerText = "-";
+            document.getElementById('lblCargo').innerText = "-";
+            document.getElementById('lblServicio').innerText = "-";
+            document.getElementById('lblRegimen').innerText = "-";
+            document.getElementById('lblMesRol').innerText = "-";
+
+            document.getElementById('lblSaldo2026').innerText = "0 Días";
+            document.getElementById('lblDeudaAnteriores').innerText = "0 Días";
+            document.getElementById('lblTotalPendientes').innerText = "0 Días";
+
+            document.getElementById('tbodyKardex').innerHTML = `
+                <tr>
+                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros que coincidan con la búsqueda.</td>
+                </tr>
+            `;
+        }
+
         function cargarTrabajador(id) {
             trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
-            if (!trabajadorActual) return;
+            if (!trabajadorActual) return limpiarVistaPantalla();
 
             document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
             document.getElementById('lblDni').innerText = trabajadorActual.dni || "Sin registro";
@@ -647,7 +674,7 @@
                     <td class="p-2 border font-bold text-blue-800">${diasGozadosTotales} Días</td>
                     <td class="p-2 border text-slate-700">${k.detalle_fechas || 'Sin registro'}</td>
                     <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
-                    <td class="p-2 border"><span class="text-slate-400">Activo</span></td>
+                    <td class="p-2 border"><span class="text-slate-400 font-bold">Activo</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -655,6 +682,89 @@
             document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
             document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
             document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
+            
+            sincronizarFormularioConTabla();
+        }
+
+        function parseFechaLocal(strFecha) {
+            const partes = strFecha.split('/');
+            if (partes.length === 3) return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+            return null;
+        }
+
+        function sincronizarFormularioConTabla() {
+            if (!trabajadorActual) return;
+            const anoSel = parseInt(document.getElementById('kardexAno').value);
+            const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            const k = kardexData.find(x => x.periodo_ano === anoSel);
+
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+
+            if (k) {
+                document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
+                document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || 'Sin registros gozados';
+            } else {
+                document.getElementById('kardexDiasPendientes').value = 30;
+                document.getElementById('kardexFechasDetalle').value = 'Sin registros gozados';
+            }
+        }
+
+        function calcularDiasFechas() {
+            const fIniVal = document.getElementById('fechaInicio').value;
+            const fFinVal = document.getElementById('fechaFin').value;
+            const ano = parseInt(document.getElementById('kardexAno').value);
+
+            if (!fIniVal || !fFinVal || !trabajadorActual) return;
+
+            const d1 = new Date(fIniVal + 'T00:00:00');
+            const d2 = new Date(fFinVal + 'T00:00:00');
+
+            if (d2 < d1) {
+                alert("La Fecha Fin no puede ser menor a la Fecha Inicio.");
+                document.getElementById('fechaFin').value = '';
+                return;
+            }
+
+            let diffTime = Math.abs(d2 - d1);
+            let diasTramoActual = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            let domingos = 0;
+            let tempDate = new Date(d1);
+            while (tempDate <= d2) {
+                if (tempDate.getDay() === 0) domingos++;
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+
+            document.getElementById('lblDiasCalculados').innerText = `${diasTramoActual} Días`;
+            document.getElementById('lblDomingosContados').innerText = `${domingos} Domingo(s)`;
+
+            const fIniFormatted = d1.toLocaleDateString('es-PE');
+            const fFinFormatted = d2.toLocaleDateString('es-PE');
+            const textoNuevoTramo = `Del ${fIniFormatted} al ${fFinFormatted} (${diasTramoActual} días - Incluye ${domingos} domingos)`;
+
+            let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
+
+            let diasGozadosPrevios = regPrevio ? (30 - regPrevio.dias_pendientes) : 0;
+            let nuevoTotalGozados = diasGozadosPrevios + diasTramoActual;
+
+            if (nuevoTotalGozados > 30) {
+                alert(`Este tramo supera los 30 días permitidos para el periodo ${ano}.`);
+                document.getElementById('fechaFin').value = '';
+                return;
+            }
+
+            let nuevoSaldoRestante = 30 - nuevoTotalGozados;
+            document.getElementById('kardexDiasPendientes').value = nuevoSaldoRestante >= 0 ? nuevoSaldoRestante : 0;
+
+            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026" && regPrevio.detalle_fechas !== "Sin registros gozados"
+                ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
+                : textoNuevoTramo;
+
+            document.getElementById('kardexFechasDetalle').value = historialTexto;
         }
 
         async function guardarTramoAno(e) {
@@ -680,7 +790,6 @@
 
             guardarStorage();
 
-            // Guardar directo en Supabase
             await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
@@ -691,15 +800,99 @@
                     detalle_fechas: det,
                     actualizado_por: 1
                 })
-            });
+            }).catch(e => {});
 
             alert(`¡Tramo guardado con éxito!`);
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
             cargarTrabajador(trabajadorActual.id);
         }
 
-        function sincronizarFormularioConTabla() {}
-        function calcularDiasFechas() {}
-        function aplicarFiltrosAvanzados() {}
+        function aplicarFiltrosAvanzados() {
+            const cargoSel = document.getElementById('selectFiltroCargo').value;
+            const mesNum = document.getElementById('selectFiltroMesReal').value;
+
+            listaTrabajadores = TRABAJADORES_BASE.filter(t => {
+                const cargoStr = (t.cargo || "").trim().toUpperCase();
+
+                let cumpleCargo = true;
+                if (cargoSel !== "TODOS") {
+                    if (cargoSel === "EXACT_MEDICO") {
+                        cumpleCargo = (cargoStr === "MEDICO");
+                    } else if (cargoSel === "TECNOLOGO MEDICO") {
+                        cumpleCargo = cargoStr.includes("TECNOLOGO MEDICO");
+                    } else {
+                        cumpleCargo = (cargoStr === cargoSel.toUpperCase()) || cargoStr.includes(cargoSel.toUpperCase());
+                    }
+                }
+
+                let cumpleMes = true;
+                if (mesNum !== "TODOS") {
+                    cumpleMes = false;
+                    const kardex = KARDEX_MEMORIA[t.id] || [];
+                    for (let k of kardex) {
+                        if (k.detalle_fechas) {
+                            const tramos = k.detalle_fechas.split(" | ");
+                            for (let tramo of tramos) {
+                                const matchIni = tramo.match(/Del (\d{1,2})\/(\d{1,2})\/\d{4}/);
+                                if (matchIni && matchIni[2].padStart(2, '0') === mesNum) {
+                                    cumpleMes = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return cumpleCargo && cumpleMes;
+            });
+
+            renderDesplegable(listaTrabajadores);
+            if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+            else limpiarVistaPantalla();
+        }
+
+        // EVENTOS DE BÚSQUEDA RESTAURADOS (DNI, PLANILLA, NOMBRE)
+        document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
+            const dni = e.target.value.trim();
+            if (!dni) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
+            }
+            const enc = TRABAJADORES_BASE.filter(t => t.dni && t.dni.startsWith(dni));
+            renderDesplegable(enc);
+            if (enc.length > 0) cargarTrabajador(enc[0].id);
+            else limpiarVistaPantalla();
+        });
+
+        document.getElementById('txtBuscarPlanilla').addEventListener('input', function(e) {
+            const plan = e.target.value.trim();
+            if (!plan) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
+            }
+            const enc = TRABAJADORES_BASE.filter(t => t.planilla && t.planilla.startsWith(plan));
+            renderDesplegable(enc);
+            if (enc.length > 0) cargarTrabajador(enc[0].id);
+            else limpiarVistaPantalla();
+        });
+
+        document.getElementById('txtFiltroNombre').addEventListener('input', function(e) {
+            const txt = e.target.value.toLowerCase().trim();
+            if (!txt) {
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                return cargarTrabajador(listaTrabajadores[0].id);
+            }
+            const filt = TRABAJADORES_BASE.filter(t => t.nombre_completo.toLowerCase().includes(txt));
+            renderDesplegable(filt);
+            if (filt.length > 0) cargarTrabajador(filt[0].id);
+            else limpiarVistaPantalla();
+        });
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
     </script>
