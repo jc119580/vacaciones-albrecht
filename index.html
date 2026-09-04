@@ -594,12 +594,11 @@
         </div>
     </div>
 
-    <!-- SCRIPT CON CÁLCULO DINÁMICO DE AÑOS Y CARGA EN VIVO OBLIGATORIA DESDE SUPABASE -->
+    <!-- SCRIPT DE CONEXIÓN NUBE Y SINCRONIZACIÓN EN TIEMPO REAL -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
 
-        // AÑO ACTUAL DINÁMICO SEGÚN RELOJ DEL SISTEMA
         const ANO_ACTUAL = new Date().getFullYear();
         const ANO_SIGUIENTE = ANO_ACTUAL + 1;
 
@@ -640,7 +639,7 @@
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
                 ...extraHeaders
             };
         }
@@ -690,15 +689,14 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
             btn.disabled = true;
 
-            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
-
             try {
+                // 1. SUBIR TRABAJADORES CON ON_CONFLICT EXPLÍCITO
                 for (let t of TRABAJADORES_BASE) {
-                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                         method: "POST",
-                        headers: headersUpsert,
+                        headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                         body: JSON.stringify({
-                            id: t.id,
+                            id: parseInt(t.id),
                             nombre_completo: t.nombre_completo,
                             dni: t.dni,
                             planilla: t.planilla,
@@ -710,15 +708,16 @@
                     }).catch(e => console.log("Procesando..."));
                 }
 
+                // 2. SUBIR HISTORIAL DE KARDEX CON ON_CONFLICT EXPLÍCITO DE CLAVE ÚNICA
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                             method: "POST",
-                            headers: headersUpsert,
+                            headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                             body: JSON.stringify({
                                 trabajador_id: parseInt(id),
-                                periodo_ano: k.periodo_ano,
-                                dias_pendientes: k.dias_pendientes,
+                                periodo_ano: parseInt(k.periodo_ano),
+                                dias_pendientes: parseInt(k.dias_pendientes),
                                 detalle_fechas: k.detalle_fechas,
                                 actualizado_por: 1
                             })
@@ -726,7 +725,7 @@
                     }
                 }
 
-                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase.");
+                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y guardado todos tus tramos en la Nube de Supabase.");
                 await descargarDatosSupabase();
             } catch (err) {
                 alert("Sincronización procesada.");
@@ -736,16 +735,15 @@
             }
         }
 
-        // DESCARGA OBLIGATORIA EN VIVO SIN CACHÉ
         async function descargarDatosSupabase() {
             try {
-                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&timestamp=${Date.now()}`, { headers: getHeaders() });
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&t=${Date.now()}`, { headers: getHeaders() });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
-                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&timestamp=${Date.now()}`, { headers: getHeaders() });
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&t=${Date.now()}`, { headers: getHeaders() });
                 if (respK.ok) {
                     const dataK = await respK.json();
                     if (dataK && dataK.length > 0) {
@@ -1225,13 +1223,13 @@
 
             guardarStorage();
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
-                    trabajador_id: trabajadorActual.id,
-                    periodo_ano: anoEdicionModal,
-                    dias_pendientes: k.dias_pendientes,
+                    trabajador_id: parseInt(trabajadorActual.id),
+                    periodo_ano: parseInt(anoEdicionModal),
+                    dias_pendientes: parseInt(k.dias_pendientes),
                     detalle_fechas: k.detalle_fechas,
                     actualizado_por: usuarioSesion ? usuarioSesion.id : 1
                 })
@@ -1461,13 +1459,13 @@
             guardarStorage();
 
             // GUARDADO DIRECTO A SUPABASE
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
-                    trabajador_id: trabajadorActual.id,
-                    periodo_ano: ano,
-                    dias_pendientes: pend,
+                    trabajador_id: parseInt(trabajadorActual.id),
+                    periodo_ano: parseInt(ano),
+                    dias_pendientes: parseInt(pend),
                     detalle_fechas: det,
                     actualizado_por: usuarioSesion ? usuarioSesion.id : 1
                 })
@@ -1499,11 +1497,11 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
-                    id: nuevo.id,
+                    id: parseInt(nuevo.id),
                     nombre_completo: nuevo.nombre_completo,
                     dni: nuevo.dni,
                     planilla: nuevo.planilla,
