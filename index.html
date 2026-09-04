@@ -104,7 +104,7 @@
                             <label class="block text-[11px] text-blue-200 mb-1">Cargo del Trabajador:</label>
                             <select id="selectFiltroCargo" onchange="aplicarFiltrosAvanzados()" class="w-full text-xs font-semibold rounded-lg p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none">
                                 <option value="TODOS">-- Todos los Cargos --</option>
-                                <option value="MEDICO">MEDICO</option>
+                                <option value="EXACT_MEDICO">MEDICO</option>
                                 <option value="ENFERMERA(O)">ENFERMERA(O)</option>
                                 <option value="TECNICO DE ENFERMERIA">TECNICO DE ENFERMERIA</option>
                                 <option value="PROFESIONAL TECNICO">PROFESIONAL TECNICO</option>
@@ -113,7 +113,10 @@
                                 <option value="AUXILIAR DE SERVICIO ASISTENCIAL">AUXILIAR DE SERVICIO ASIST.</option>
                                 <option value="TECNICO ADMINISTRATIVO">TECNICO ADMINISTRATIVO</option>
                                 <option value="CHOFER ASISTENCIAL">CHOFER ASISTENCIAL</option>
+                                <option value="TECNOLOGO MEDICO">TECNOLOGO MEDICO (TODOS)</option>
                                 <option value="TECNOLOGO MEDICO DE LABORATORIO">TM LABORATORIO</option>
+                                <option value="TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB.">TM TERAPIA FISICA</option>
+                                <option value="TECNOLOGO MEDICO DE RADIOLOGIA">TM RADIOLOGIA</option>
                                 <option value="QUIMICO FARMACEUTICO">QUIMICO FARMACEUTICO</option>
                                 <option value="PROFESIONAL">PROFESIONAL</option>
                                 <option value="NUTRICIONISTA">NUTRICIONISTA</option>
@@ -122,9 +125,7 @@
                                 <option value="TRABAJADOR(A) SOCIAL">TRABAJADOR(A) SOCIAL</option>
                                 <option value="PSICOLOGO">PSICOLOGO</option>
                                 <option value="AUXILIAR ADMINISTRATIVO">AUXILIAR ADMINISTRATIVO</option>
-                                <option value="TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB.">TM TERAPIA FISICA</option>
                                 <option value="BIOLOGO">BIOLOGO</option>
-                                <option value="TECNOLOGO MEDICO DE RADIOLOGIA">TM RADIOLOGIA</option>
                             </select>
                         </div>
                         <div>
@@ -186,7 +187,7 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
+                <!-- MÓDULO AGREGAR PERSONAL CON DESPLEGABLE NORMATIVO DE CARGOS -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -194,22 +195,22 @@
                     </h3>
                     <form id="formNuevoTrabajador" onsubmit="guardarNuevoTrabajador(event)" class="space-y-3 text-xs">
                         <div>
-                            <label class="block text-slate-600 mb-0.5">Apellidos y Nombres Completo:</label>
+                            <label class="block text-slate-600 mb-0.5 font-semibold">Apellidos y Nombres Completo:</label>
                             <input type="text" id="regNombre" required placeholder="Ej. ALVAREZ SANCHEZ PEDRO" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-slate-600 mb-0.5">DNI:</label>
+                                <label class="block text-slate-600 mb-0.5 font-semibold">DNI:</label>
                                 <input type="text" id="regDni" maxlength="8" required placeholder="8 dígitos" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 font-mono">
                             </div>
                             <div>
-                                <label class="block text-slate-600 mb-0.5">N° Planilla:</label>
+                                <label class="block text-slate-600 mb-0.5 font-semibold">N° Planilla:</label>
                                 <input type="text" id="regPlanilla" required placeholder="Ej. 2616671" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 font-mono">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-slate-600 mb-0.5">Régimen Laboral:</label>
+                                <label class="block text-slate-600 mb-0.5 font-semibold">Régimen Laboral:</label>
                                 <select id="regRegimen" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500">
                                     <option value="728">D.L. 728</option>
                                     <option value="276">D.L. 276</option>
@@ -217,17 +218,39 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-slate-600 mb-0.5">Servicio / Área:</label>
+                                <label class="block text-slate-600 mb-0.5 font-semibold">Servicio / Área:</label>
                                 <input type="text" id="regServicio" required placeholder="Ej. ENFERMERIA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
-                                <input type="text" id="regCargo" required placeholder="Ej. ENFERMERA ESPECIALISTA" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 uppercase">
+                                <label class="block text-slate-600 mb-0.5 font-semibold">Cargo Institucional:</label>
+                                <select id="regCargo" required class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500 font-semibold text-slate-700">
+                                    <option value="MEDICO">MEDICO</option>
+                                    <option value="ENFERMERA(O)">ENFERMERA(O)</option>
+                                    <option value="TECNICO DE ENFERMERIA">TECNICO DE ENFERMERIA</option>
+                                    <option value="PROFESIONAL TECNICO">PROFESIONAL TECNICO</option>
+                                    <option value="DIGITADOR ASISTENCIAL">DIGITADOR ASISTENCIAL</option>
+                                    <option value="OBSTETRIZ">OBSTETRIZ</option>
+                                    <option value="AUXILIAR DE SERVICIO ASISTENCIAL">AUXILIAR DE SERVICIO ASISTENCIAL</option>
+                                    <option value="TECNICO ADMINISTRATIVO">TECNICO ADMINISTRATIVO</option>
+                                    <option value="CHOFER ASISTENCIAL">CHOFER ASISTENCIAL</option>
+                                    <option value="TECNOLOGO MEDICO DE LABORATORIO">TECNOLOGO MEDICO DE LABORATORIO</option>
+                                    <option value="QUIMICO FARMACEUTICO">QUIMICO FARMACEUTICO</option>
+                                    <option value="PROFESIONAL">PROFESIONAL</option>
+                                    <option value="NUTRICIONISTA">NUTRICIONISTA</option>
+                                    <option value="ODONTOLOGO">ODONTOLOGO</option>
+                                    <option value="TECNICO DE SERVICIO ASISTENCIAL">TECNICO DE SERVICIO ASISTENCIAL</option>
+                                    <option value="TRABAJADOR(A) SOCIAL">TRABAJADOR(A) SOCIAL</option>
+                                    <option value="PSICOLOGO">PSICOLOGO</option>
+                                    <option value="AUXILIAR ADMINISTRATIVO">AUXILIAR ADMINISTRATIVO</option>
+                                    <option value="TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB.">TECNOLOGO MEDICO TERAPIA FISICA</option>
+                                    <option value="BIOLOGO">BIOLOGO</option>
+                                    <option value="TECNOLOGO MEDICO DE RADIOLOGIA">TECNOLOGO MEDICO RADIOLOGIA</option>
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-slate-600 mb-0.5">Mes Rol Programado:</label>
+                                <label class="block text-slate-600 mb-0.5 font-semibold">Mes Rol Programado:</label>
                                 <select id="regMesRol" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-emerald-500">
                                     <option value="Enero">Enero</option>
                                     <option value="Febrero">Febrero</option>
@@ -373,7 +396,7 @@
         </main>
     </div>
 
-    <!-- MODAL EDITAR SERVIDOR -->
+    <!-- MODAL EDITAR SERVIDOR CON DESPLEGABLE NORMATIVO -->
     <div id="modalEditarTrabajador" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
             <div class="flex justify-between items-center border-b pb-2">
@@ -386,22 +409,22 @@
             </div>
             <form onsubmit="guardarEdicionTrabajador(event)" class="space-y-3">
                 <div>
-                    <label class="block text-slate-600 mb-0.5">Apellidos y Nombres Completo:</label>
+                    <label class="block text-slate-600 mb-0.5 font-semibold">Apellidos y Nombres Completo:</label>
                     <input type="text" id="editNombre" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-600 mb-0.5">DNI:</label>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">DNI:</label>
                         <input type="text" id="editDni" maxlength="8" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
                     </div>
                     <div>
-                        <label class="block text-slate-600 mb-0.5">N° Planilla:</label>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">N° Planilla:</label>
                         <input type="text" id="editPlanilla" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-600 mb-0.5">Régimen Laboral:</label>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Régimen Laboral:</label>
                         <select id="editRegimen" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
                             <option value="728">D.L. 728</option>
                             <option value="276">D.L. 276</option>
@@ -409,17 +432,39 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-slate-600 mb-0.5">Servicio / Área:</label>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Servicio / Área:</label>
                         <input type="text" id="editServicio" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-600 mb-0.5">Cargo / Especialidad:</label>
-                        <input type="text" id="editCargo" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Cargo Institucional:</label>
+                        <select id="editCargo" required class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500 font-semibold text-slate-700">
+                            <option value="MEDICO">MEDICO</option>
+                            <option value="ENFERMERA(O)">ENFERMERA(O)</option>
+                            <option value="TECNICO DE ENFERMERIA">TECNICO DE ENFERMERIA</option>
+                            <option value="PROFESIONAL TECNICO">PROFESIONAL TECNICO</option>
+                            <option value="DIGITADOR ASISTENCIAL">DIGITADOR ASISTENCIAL</option>
+                            <option value="OBSTETRIZ">OBSTETRIZ</option>
+                            <option value="AUXILIAR DE SERVICIO ASISTENCIAL">AUXILIAR DE SERVICIO ASISTENCIAL</option>
+                            <option value="TECNICO ADMINISTRATIVO">TECNICO ADMINISTRATIVO</option>
+                            <option value="CHOFER ASISTENCIAL">CHOFER ASISTENCIAL</option>
+                            <option value="TECNOLOGO MEDICO DE LABORATORIO">TECNOLOGO MEDICO DE LABORATORIO</option>
+                            <option value="QUIMICO FARMACEUTICO">QUIMICO FARMACEUTICO</option>
+                            <option value="PROFESIONAL">PROFESIONAL</option>
+                            <option value="NUTRICIONISTA">NUTRICIONISTA</option>
+                            <option value="ODONTOLOGO">ODONTOLOGO</option>
+                            <option value="TECNICO DE SERVICIO ASISTENCIAL">TECNICO DE SERVICIO ASISTENCIAL</option>
+                            <option value="TRABAJADOR(A) SOCIAL">TRABAJADOR(A) SOCIAL</option>
+                            <option value="PSICOLOGO">PSICOLOGO</option>
+                            <option value="AUXILIAR ADMINISTRATIVO">AUXILIAR ADMINISTRATIVO</option>
+                            <option value="TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB.">TECNOLOGO MEDICO TERAPIA FISICA</option>
+                            <option value="BIOLOGO">BIOLOGO</option>
+                            <option value="TECNOLOGO MEDICO DE RADIOLOGIA">TECNOLOGO MEDICO RADIOLOGIA</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-slate-600 mb-0.5">Mes Rol Programado:</label>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Mes Rol Programado:</label>
                         <select id="editMesRol" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
                             <option value="Enero">Enero</option>
                             <option value="Febrero">Febrero</option>
@@ -638,7 +683,7 @@
             `;
         }
 
-        // FILTRO COMBINADO EXACTO SEGÚN EXCEL DE CARGOS Y MES REAL
+        // FILTRO COMBINADO FLEXIBLE POR CARGO Y MES REAL
         function aplicarFiltrosAvanzados() {
             const cargoSel = document.getElementById('selectFiltroCargo').value;
             const mesNum = document.getElementById('selectFiltroMesReal').value;
@@ -646,16 +691,19 @@
             listaTrabajadores = TRABAJADORES_BASE.filter(t => {
                 const cargoStr = (t.cargo || "").trim().toUpperCase();
 
-                // COMPARACIÓN EXACTA O DE SUBCADENA ESPECÍFICA
+                // COINCIDENCIA POR CARGO
                 let cumpleCargo = true;
                 if (cargoSel !== "TODOS") {
-                    if (cargoSel === "MEDICO") {
+                    if (cargoSel === "EXACT_MEDICO") {
                         cumpleCargo = (cargoStr === "MEDICO");
+                    } else if (cargoSel === "TECNOLOGO MEDICO") {
+                        cumpleCargo = cargoStr.includes("TECNOLOGO MEDICO");
                     } else {
-                        cumpleCargo = (cargoStr === cargoSel.toUpperCase());
+                        cumpleCargo = (cargoStr === cargoSel.toUpperCase()) || cargoStr.includes(cargoSel.toUpperCase());
                     }
                 }
 
+                // COINCIDENCIA POR MES SALIDA REAL (CONVENIOS)
                 let cumpleMes = true;
                 if (mesNum !== "TODOS") {
                     cumpleMes = false;
@@ -1157,7 +1205,7 @@
                 planilla: document.getElementById('regPlanilla').value.trim(),
                 regimen: document.getElementById('regRegimen').value,
                 servicio: document.getElementById('regServicio').value.trim().toUpperCase(),
-                cargo: document.getElementById('regCargo').value.trim().toUpperCase(),
+                cargo: document.getElementById('regCargo').value,
                 mes_rol: document.getElementById('regMesRol').value
             };
 
@@ -1178,7 +1226,7 @@
                 })
             }).catch(e => console.error("Sincronización diferida"));
 
-            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito!`);
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito con el cargo ${nuevo.cargo}!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
@@ -1209,7 +1257,7 @@
             trabajadorActual.planilla = document.getElementById('editPlanilla').value.trim();
             trabajadorActual.regimen = document.getElementById('editRegimen').value;
             trabajadorActual.servicio = document.getElementById('editServicio').value.trim().toUpperCase();
-            trabajadorActual.cargo = document.getElementById('editCargo').value.trim().toUpperCase();
+            trabajadorActual.cargo = document.getElementById('editCargo').value;
             trabajadorActual.mes_rol = document.getElementById('editMesRol').value;
 
             guardarStorage();
