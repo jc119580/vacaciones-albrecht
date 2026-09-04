@@ -90,7 +90,6 @@
             <!-- COLUMNA IZQUIERDA -->
             <section class="lg:col-span-1 space-y-6">
                 
-                <!-- BUSCADOR CON FILTROS DE CARGO SEGÚN EXCEL OFICIAL -->
                 <div class="bg-blue-900 text-white rounded-xl shadow-md p-4 border border-blue-800 space-y-3">
                     <div class="flex justify-between items-center">
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
@@ -180,7 +179,7 @@
                         <span id="lblRegimen" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-300">-</span>
                     </div>
                     
-                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800">Sin resultados</h2>
+                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800">Seleccione un trabajador utilizando el buscador</h2>
 
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div><p class="text-slate-500">DNI:</p><p id="lblDni" class="font-semibold text-slate-700">-</p></div>
@@ -294,11 +293,11 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
-                <!-- INDICADORES PRINCIPALES Y MÓDULO DE REPORTES -->
+                <!-- INDICADORES PRINCIPALES Y MÓDULO DE REPORTES DINÁMICOS -->
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
+                            <p id="lblTituloSaldoAnoActual" class="text-xs text-slate-500">Saldo Periodo 2026</p>
                             <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">0 Días</p>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -310,7 +309,7 @@
                             <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">0 Días</p>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <p class="text-xs text-slate-500">Adelanto 2027</p>
+                            <p id="lblTituloAdelantoSiguiente" class="text-xs text-slate-500">Adelanto 2027</p>
                             <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">0 Días</p>
                         </div>
                     </div>
@@ -366,12 +365,6 @@
                             <div>
                                 <label class="block text-slate-600 mb-1 font-semibold">Año / Periodo Vacacional:</label>
                                 <select id="kardexAno" onchange="sincronizarFormularioConTabla()" class="w-full border rounded p-2 bg-white outline-none font-bold text-slate-700">
-                                    <option value="2022">2022</option>
-                                    <option value="2023">2023</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026" selected>2026</option>
-                                    <option value="2027">2027 (Adelantadas)</option>
                                 </select>
                             </div>
                             <div>
@@ -601,10 +594,14 @@
         </div>
     </div>
 
-    <!-- CONEXIÓN NUBE Y SISTEMA AUTÓNOMO -->
+    <!-- SCRIPT DE CONEXIÓN NUBE Y CÁLCULO DINÁMICO DE AÑOS -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
+
+        // AÑO ACTUAL DINÁMICO
+        const ANO_ACTUAL = new Date().getFullYear();
+        const ANO_SIGUIENTE = ANO_ACTUAL + 1;
 
         const USUARIOS_SISTEMA = [
             { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
@@ -627,7 +624,7 @@
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
         let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
-        let anoEdicionModal = 2026;
+        let anoEdicionModal = ANO_ACTUAL;
 
         function guardarStorage() {
             localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
@@ -647,6 +644,37 @@
             };
         }
 
+        function inicializarAnosDinamicos() {
+            // Configurar títulos dinámicos en contadores
+            document.getElementById('lblTituloSaldoAnoActual').innerText = `Saldo Periodo ${ANO_ACTUAL}`;
+            document.getElementById('lblTituloAdelantoSiguiente').innerText = `Adelanto ${ANO_SIGUIENTE}`;
+
+            // Poblar el selector de año en el formulario dinámicamente
+            const selectAno = document.getElementById('kardexAno');
+            selectAno.innerHTML = "";
+
+            // Años anteriores (deuda histórica)
+            for (let a = ANO_ACTUAL - 4; a < ANO_ACTUAL; a++) {
+                const opt = document.createElement('option');
+                opt.value = a;
+                opt.innerText = a;
+                selectAno.appendChild(opt);
+            }
+
+            // Año Actual
+            const optActual = document.createElement('option');
+            optActual.value = ANO_ACTUAL;
+            optActual.innerText = ANO_ACTUAL;
+            optActual.selected = true;
+            selectAno.appendChild(optActual);
+
+            // Año Siguiente (Adelantadas)
+            const optSig = document.createElement('option');
+            optSig.value = ANO_SIGUIENTE;
+            optSig.innerText = `${ANO_SIGUIENTE} (Adelantadas)`;
+            selectAno.appendChild(optSig);
+        }
+
         function togglePasswordVisibility() {
             const pwdInput = document.getElementById('loginPassword');
             const eyeIcon = document.getElementById('eyeIcon');
@@ -661,7 +689,6 @@
             }
         }
 
-        // SUBIDA CON UPSERT FORZADO POSTGREST
         async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
@@ -670,7 +697,6 @@
             const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
 
             try {
-                // 1. SUBIR TRABAJADORES
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                         method: "POST",
@@ -688,7 +714,6 @@
                     }).catch(e => console.log("Procesando..."));
                 }
 
-                // 2. SUBIR HISTORIAL DE KARDEX
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
                         await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
@@ -705,7 +730,7 @@
                     }
                 }
 
-                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase. Ahora refresca tu celular para ver todo tu avance.");
+                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase.");
             } catch (err) {
                 alert("Sincronización procesada.");
             } finally {
@@ -714,7 +739,6 @@
             }
         }
 
-        // DESCARGA DE LA NUBE
         async function descargarDatosSupabase() {
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
@@ -777,6 +801,7 @@
                 usuarioSesion = usuarioValido;
                 
                 await descargarDatosSupabase();
+                inicializarAnosDinamicos();
 
                 document.getElementById('pantallaLogin').classList.add('hidden');
                 document.getElementById('pantallaSistema').classList.remove('hidden');
@@ -798,8 +823,6 @@
 
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
-                
-                // PANTALLA INICIAL LIMPIA SIN CARGAR A NADIE POR DEFECTO
                 limpiarVistaPantalla();
             }
         }
@@ -871,13 +894,12 @@
             limpiarVistaPantalla();
         }
 
-        // GENERADOR DE REPORTES
         function generarReporte(tipo) {
             const tbody = document.getElementById('tbodyReporteModal');
             tbody.innerHTML = "";
 
             let titulo = "CONSOLIDADO GENERAL DE PLANTILLA VACACIONAL";
-            if (tipo === "PENDIENTES") titulo = "PERSONAL CON DÍAS PENDIENTES DE GOCE EN EL PERIODO 2026";
+            if (tipo === "PENDIENTES") titulo = `PERSONAL CON DÍAS PENDIENTES DE GOCE EN EL PERIODO ${ANO_ACTUAL}`;
             if (tipo === "SIN_REGISTRO") titulo = "PERSONAL QUE AÚN NO REGISTRA NINGUNA FECHA DE VACACIONES (0 DÍAS COMPUTADOS)";
             if (tipo === "COMPLETADOS") titulo = "PERSONAL CON VACACIONES COMPLETADAS (30 DÍAS GOZADOS/PROGRAMADOS)";
 
@@ -887,10 +909,10 @@
 
             TRABAJADORES_BASE.forEach(t => {
                 const kardex = KARDEX_MEMORIA[t.id] || [];
-                const reg2026 = kardex.find(k => k.periodo_ano === 2026) || { dias_pendientes: 30, detalle_fechas: "" };
+                const regAnoActual = kardex.find(k => k.periodo_ano === ANO_ACTUAL) || { dias_pendientes: 30, detalle_fechas: "" };
                 
-                const diasComputados = 30 - reg2026.dias_pendientes;
-                const saldoPendiente = reg2026.dias_pendientes;
+                const diasComputados = 30 - regAnoActual.dias_pendientes;
+                const saldoPendiente = regAnoActual.dias_pendientes;
 
                 let coincideFiltro = false;
                 if (tipo === "TODOS") coincideFiltro = true;
@@ -1048,7 +1070,7 @@
 
             if (!KARDEX_MEMORIA[trabajadorActual.id]) {
                 KARDEX_MEMORIA[trabajadorActual.id] = [
-                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
+                    { periodo_ano: ANO_ACTUAL, dias_pendientes: 30, detalle_fechas: `Periodo Vacacional ${ANO_ACTUAL}` }
                 ];
                 guardarStorage();
             }
@@ -1057,16 +1079,16 @@
             const tbody = document.getElementById('tbodyKardex');
             tbody.innerHTML = "";
 
-            let saldo2026 = 30;
+            let saldoAnoActual = 30;
             let deudaAnteriores = 0;
-            let adelanto2027 = 0;
+            let adelantoSiguiente = 0;
 
             const hoy = new Date();
 
             kardexData.forEach(k => {
-                if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
-                if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
-                if (k.periodo_ano === 2027) adelanto2027 = 30 - k.dias_pendientes;
+                if (k.periodo_ano === ANO_ACTUAL) saldoAnoActual = k.dias_pendientes;
+                if (k.periodo_ano < ANO_ACTUAL) deudaAnteriores += k.dias_pendientes;
+                if (k.periodo_ano === ANO_SIGUIENTE) adelantoSiguiente = 30 - k.dias_pendientes;
 
                 const diasGozadosTotales = 30 - k.dias_pendientes;
 
@@ -1143,10 +1165,10 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
+            document.getElementById('lblSaldo2026').innerText = `${saldoAnoActual} Días`;
             document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
-            document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
-            document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
+            document.getElementById('lblTotalPendientes').innerText = `${saldoAnoActual + deudaAnteriores} Días`;
+            document.getElementById('lblAdelanto2027').innerText = `${adelantoSiguiente} Días`;
 
             sincronizarFormularioConTabla();
         }
@@ -1162,7 +1184,7 @@
             const contenedor = document.getElementById('contenedorTramosLista');
             contenedor.innerHTML = "";
 
-            if (k && k.detalle_fechas && k.detalle_fechas !== "Periodo Vacacional 2026" && k.detalle_fechas !== "Sin registros gozados") {
+            if (k && k.detalle_fechas && !k.detalle_fechas.startsWith("Periodo Vacacional") && k.detalle_fechas !== "Sin registros gozados") {
                 const tramos = k.detalle_fechas.split(" | ");
                 tramos.forEach((t, index) => {
                     const div = document.createElement('div');
@@ -1226,20 +1248,20 @@
             if (!trabajadorActual) return;
             const anoSel = parseInt(document.getElementById('kardexAno').value);
 
-            if (anoSel === 2027) {
+            if (anoSel === ANO_SIGUIENTE) {
                 const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
-                let pend2026 = 30;
+                let pendAnoActual = 30;
                 let pendAnteriores = 0;
 
                 kardexData.forEach(k => {
-                    if (k.periodo_ano === 2026) pend2026 = k.dias_pendientes;
-                    if (k.periodo_ano < 2026) pendAnteriores += k.dias_pendientes;
+                    if (k.periodo_ano === ANO_ACTUAL) pendAnoActual = k.dias_pendientes;
+                    if (k.periodo_ano < ANO_ACTUAL) pendAnteriores += k.dias_pendientes;
                 });
 
-                const totalPend = pend2026 + pendAnteriores;
+                const totalPend = pendAnoActual + pendAnteriores;
                 if (totalPend > 0) {
-                    alert(`🚨 REGISTRO DENEGADO:\nEl servidor ${trabajadorActual.nombre_completo} aún cuenta con ${totalPend} DÍAS PENDIENTES en el periodo actual / anteriores.\n\nPor norma laboral, debe agotar sus días pendientes antes de registrar o adelantar vacaciones del periodo 2027.`);
-                    document.getElementById('kardexAno').value = "2026";
+                    alert(`🚨 REGISTRO DENEGADO:\nEl servidor ${trabajadorActual.nombre_completo} aún cuenta con ${totalPend} DÍAS PENDIENTES en el periodo actual / anteriores.\n\nPor norma laboral, debe agotar sus días pendientes antes de registrar o adelantar vacaciones del periodo ${ANO_SIGUIENTE}.`);
+                    document.getElementById('kardexAno').value = ANO_ACTUAL;
                 }
             }
             actualizarContadorDomingos();
@@ -1356,7 +1378,7 @@
             let nuevoSaldoRestante = 30 - nuevoTotalGozados;
             document.getElementById('kardexDiasPendientes').value = nuevoSaldoRestante >= 0 ? nuevoSaldoRestante : 0;
 
-            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026" && regPrevio.detalle_fechas !== "Sin registros gozados"
+            let historialTexto = regPrevio && regPrevio.detalle_fechas && !regPrevio.detalle_fechas.startsWith("Periodo Vacacional") && regPrevio.detalle_fechas !== "Sin registros gozados"
                 ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
                 : textoNuevoTramo;
 
@@ -1412,16 +1434,16 @@
 
             const ano = parseInt(document.getElementById('kardexAno').value);
 
-            if (ano === 2027) {
+            if (ano === ANO_SIGUIENTE) {
                 const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
-                let pend2026 = 30;
+                let pendAnoActual = 30;
                 let pendAnteriores = 0;
                 kardexData.forEach(k => {
-                    if (k.periodo_ano === 2026) pend2026 = k.dias_pendientes;
-                    if (k.periodo_ano < 2026) pendAnteriores += k.dias_pendientes;
+                    if (k.periodo_ano === ANO_ACTUAL) pendAnoActual = k.dias_pendientes;
+                    if (k.periodo_ano < ANO_ACTUAL) pendAnteriores += k.dias_pendientes;
                 });
-                if (pend2026 + pendAnteriores > 0) {
-                    alert(`🚨 REGISTRO DENEGADO:\nNo puede registrar adelantos del 2027 porque el trabajador aún cuenta con días pendientes en el periodo actual/anteriores.`);
+                if (pendAnoActual + pendAnteriores > 0) {
+                    alert(`🚨 REGISTRO DENEGADO:\nNo puede registrar adelantos del ${ANO_SIGUIENTE} porque el trabajador aún cuenta con días pendientes en el periodo actual/anteriores.`);
                     return;
                 }
             }
