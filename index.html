@@ -297,7 +297,7 @@
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <p id="lblTituloSaldoAnoActual" class="text-xs text-slate-500">Saldo Periodo 2026</p>
+                            <p id="lblTituloSaldoAnoActual" class="text-xs text-slate-500">Periodo 2026</p>
                             <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">0 Días</p>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -594,12 +594,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN NUBE Y CÁLCULO DINÁMICO DE AÑOS -->
+    <!-- SCRIPT CON CÁLCULO DINÁMICO DE AÑOS Y CARGA EN VIVO OBLIGATORIA DESDE SUPABASE -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
 
-        // AÑO ACTUAL DINÁMICO
+        // AÑO ACTUAL DINÁMICO SEGÚN RELOJ DEL SISTEMA
         const ANO_ACTUAL = new Date().getFullYear();
         const ANO_SIGUIENTE = ANO_ACTUAL + 1;
 
@@ -640,20 +640,18 @@
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
                 ...extraHeaders
             };
         }
 
         function inicializarAnosDinamicos() {
-            // Configurar títulos dinámicos en contadores
-            document.getElementById('lblTituloSaldoAnoActual').innerText = `Saldo Periodo ${ANO_ACTUAL}`;
+            document.getElementById('lblTituloSaldoAnoActual').innerText = `Periodo ${ANO_ACTUAL}`;
             document.getElementById('lblTituloAdelantoSiguiente').innerText = `Adelanto ${ANO_SIGUIENTE}`;
 
-            // Poblar el selector de año en el formulario dinámicamente
             const selectAno = document.getElementById('kardexAno');
             selectAno.innerHTML = "";
 
-            // Años anteriores (deuda histórica)
             for (let a = ANO_ACTUAL - 4; a < ANO_ACTUAL; a++) {
                 const opt = document.createElement('option');
                 opt.value = a;
@@ -661,14 +659,12 @@
                 selectAno.appendChild(opt);
             }
 
-            // Año Actual
             const optActual = document.createElement('option');
             optActual.value = ANO_ACTUAL;
             optActual.innerText = ANO_ACTUAL;
             optActual.selected = true;
             selectAno.appendChild(optActual);
 
-            // Año Siguiente (Adelantadas)
             const optSig = document.createElement('option');
             optSig.value = ANO_SIGUIENTE;
             optSig.innerText = `${ANO_SIGUIENTE} (Adelantadas)`;
@@ -731,6 +727,7 @@
                 }
 
                 alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase.");
+                await descargarDatosSupabase();
             } catch (err) {
                 alert("Sincronización procesada.");
             } finally {
@@ -739,15 +736,16 @@
             }
         }
 
+        // DESCARGA OBLIGATORIA EN VIVO SIN CACHÉ
         async function descargarDatosSupabase() {
             try {
-                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&timestamp=${Date.now()}`, { headers: getHeaders() });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
-                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*`, { headers: getHeaders() });
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&timestamp=${Date.now()}`, { headers: getHeaders() });
                 if (respK.ok) {
                     const dataK = await respK.json();
                     if (dataK && dataK.length > 0) {
@@ -1208,7 +1206,7 @@
             document.getElementById('modalEditarTramo').classList.add('hidden');
         }
 
-        function borrarTramoEspecifico(indexTramo) {
+        async function borrarTramoEspecifico(indexTramo) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === anoEdicionModal);
             if (!k) return;
@@ -1227,7 +1225,7 @@
 
             guardarStorage();
 
-            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
@@ -1237,7 +1235,7 @@
                     detalle_fechas: k.detalle_fechas,
                     actualizado_por: usuarioSesion ? usuarioSesion.id : 1
                 })
-            }).catch(e => {});
+            });
 
             alert("¡Tramo eliminado y saldo recalculado con éxito!");
             abrirModalTramoAno(anoEdicionModal);
@@ -1385,24 +1383,24 @@
             document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
         }
 
-        function eliminarTramoAno(ano) {
+        async function eliminarTramoAno(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
             if (confirmacion) {
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
                 guardarStorage();
 
-                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
                     headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
+                });
 
                 alert(`Periodo ${ano} eliminado con éxito.`);
                 cargarTrabajador(trabajadorActual.id);
             }
         }
 
-        function reiniciarPeriodo(ano) {
+        async function reiniciarPeriodo(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
             if (confirmacion) {
@@ -1410,10 +1408,10 @@
                 KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados" });
                 guardarStorage();
 
-                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
                     headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
+                });
 
                 alert(`Periodo ${ano} restaurado a 30 días de saldo.`);
                 cargarTrabajador(trabajadorActual.id);
@@ -1462,7 +1460,8 @@
 
             guardarStorage();
 
-            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            // GUARDADO DIRECTO A SUPABASE
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
@@ -1472,9 +1471,9 @@
                     detalle_fechas: det,
                     actualizado_por: usuarioSesion ? usuarioSesion.id : 1
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
-            alert(`¡Kardex del periodo ${ano} acumulado y actualizado con éxito!`);
+            alert(`¡Kardex del periodo ${ano} acumulado y actualizado en la Nube con éxito!`);
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -1500,7 +1499,7 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
@@ -1513,9 +1512,9 @@
                     cargo: nuevo.cargo,
                     mes_rol: nuevo.mes_rol
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
-            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito con el cargo ${nuevo.cargo}!`);
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito en la Nube!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
@@ -1552,7 +1551,7 @@
             guardarStorage();
             cerrarModalEditar();
 
-            fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
                 method: "PATCH",
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -1564,7 +1563,7 @@
                     cargo: trabajadorActual.cargo,
                     mes_rol: trabajadorActual.mes_rol
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
             alert("¡Datos del servidor actualizados con éxito!");
             renderDesplegable(TRABAJADORES_BASE);
@@ -1577,14 +1576,15 @@
             if (confirmacion1) {
                 const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción BORRARÁ todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
                 if (confirmacion2) {
-                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
-                    delete KARDEX_MEMORIA[trabajadorActual.id];
+                    const idBorrar = trabajadorActual.id;
+                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== idBorrar);
+                    delete KARDEX_MEMORIA[idBorrar];
                     guardarStorage();
 
-                    fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${idBorrar}`, {
                         method: "DELETE",
                         headers: getHeaders()
-                    }).catch(e => console.error("Sincronización diferida"));
+                    });
 
                     listaTrabajadores = TRABAJADORES_BASE;
                     alert("Trabajador eliminado de la base con éxito.");
