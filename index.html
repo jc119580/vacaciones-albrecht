@@ -160,7 +160,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] text-blue-200 mb-1">Nombre / Apellido:</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[11px] text-blue-200">Nombre / Apellido:</label>
+                            <button onclick="limpiarBuscador()" class="text-[10px] bg-blue-800 hover:bg-blue-700 text-amber-300 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                <i class="fa-solid fa-eraser"></i> Limpiar Búsqueda
+                            </button>
+                        </div>
                         <input type="text" id="txtFiltroNombre" placeholder="Escribe el nombre a buscar..." class="w-full text-xs rounded-lg p-2 bg-blue-950 text-white border border-blue-700 focus:ring-2 focus:ring-amber-400 outline-none mb-2">
                         
                         <select id="selectTrabajador" class="w-full text-xs font-semibold rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none shadow">
@@ -175,7 +180,7 @@
                         <span id="lblRegimen" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-300">-</span>
                     </div>
                     
-                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800">-</h2>
+                    <h2 id="lblNombre" class="text-lg font-bold text-slate-800">Sin resultados</h2>
 
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div><p class="text-slate-500">DNI:</p><p id="lblDni" class="font-semibold text-slate-700">-</p></div>
@@ -793,8 +798,9 @@
 
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
-                if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
-                else limpiarVistaPantalla();
+                
+                // PANTALLA INICIAL LIMPIA SIN CARGAR A NADIE POR DEFECTO
+                limpiarVistaPantalla();
             }
         }
 
@@ -807,13 +813,11 @@
             select.innerHTML = "";
             document.getElementById('lblTotalRegistrados').innerText = `${lista.length} En la Base`;
 
-            if (lista.length === 0) {
-                const opt = document.createElement('option');
-                opt.innerText = "-- Sin coincidencias --";
-                select.appendChild(opt);
-                limpiarVistaPantalla();
-                return;
-            }
+            const optDefault = document.createElement('option');
+            optDefault.value = "";
+            optDefault.innerText = "-- Seleccione o Busque un Servidor --";
+            optDefault.selected = true;
+            select.appendChild(optDefault);
 
             lista.forEach(t => {
                 const opt = document.createElement('option');
@@ -825,7 +829,7 @@
 
         function limpiarVistaPantalla() {
             trabajadorActual = null;
-            document.getElementById('lblNombre').innerText = "Sin resultados";
+            document.getElementById('lblNombre').innerText = "Seleccione un trabajador utilizando el buscador";
             document.getElementById('lblDni').innerText = "-";
             document.getElementById('lblPlanilla').innerText = "-";
             document.getElementById('lblCargo').innerText = "-";
@@ -851,9 +855,20 @@
 
             document.getElementById('tbodyKardex').innerHTML = `
                 <tr>
-                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros vacacionales que mostrar para este filtro.</td>
+                    <td colspan="6" class="p-4 text-center text-slate-400 italic">Seleccione un servidor público para consultar o registrar vacaciones.</td>
                 </tr>
             `;
+        }
+
+        function limpiarBuscador() {
+            document.getElementById('txtBuscarDNI').value = "";
+            document.getElementById('txtBuscarPlanilla').value = "";
+            document.getElementById('txtFiltroNombre').value = "";
+            document.getElementById('selectFiltroCargo').value = "TODOS";
+            document.getElementById('selectFiltroMesReal').value = "TODOS";
+            listaTrabajadores = TRABAJADORES_BASE;
+            renderDesplegable(listaTrabajadores);
+            limpiarVistaPantalla();
         }
 
         // GENERADOR DE REPORTES
@@ -964,8 +979,7 @@
             });
 
             renderDesplegable(listaTrabajadores);
-            if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
-            else limpiarVistaPantalla();
+            limpiarVistaPantalla();
         }
 
         function parseFechaLocal(strFecha) {
@@ -1020,6 +1034,7 @@
         }
 
         function cargarTrabajador(id) {
+            if (!id) return limpiarVistaPantalla();
             trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
             if (!trabajadorActual) return limpiarVistaPantalla();
 
@@ -1552,21 +1567,20 @@
                     listaTrabajadores = TRABAJADORES_BASE;
                     alert("Trabajador eliminado de la base con éxito.");
                     renderDesplegable(listaTrabajadores);
-                    if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
-                    else limpiarVistaPantalla();
+                    limpiarVistaPantalla();
                 }
             }
         }
 
         document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
 
-        // BUSCADORES EN TIEMPO REAL RESTAURADOS
+        // BUSCADORES EN TIEMPO REAL
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) {
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
-                return cargarTrabajador(listaTrabajadores[0].id);
+                return limpiarVistaPantalla();
             }
             const enc = TRABAJADORES_BASE.filter(t => t.dni && t.dni.startsWith(dni));
             renderDesplegable(enc);
@@ -1579,7 +1593,7 @@
             if (!plan) {
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
-                return cargarTrabajador(listaTrabajadores[0].id);
+                return limpiarVistaPantalla();
             }
             const enc = TRABAJADORES_BASE.filter(t => t.planilla && t.planilla.startsWith(plan));
             renderDesplegable(enc);
@@ -1592,7 +1606,7 @@
             if (!txt) {
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
-                return cargarTrabajador(listaTrabajadores[0].id);
+                return limpiarVistaPantalla();
             }
             const filt = TRABAJADORES_BASE.filter(t => t.nombre_completo.toLowerCase().includes(txt));
             renderDesplegable(filt);
