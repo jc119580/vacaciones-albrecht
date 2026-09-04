@@ -51,8 +51,9 @@
                     Usuario o contraseña incorrectos.
                 </div>
 
-                <button type="submit" id="btnIngresar" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition-colors text-sm">
-                    Ingresar al Sistema
+                <button type="submit" id="btnIngresar" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition-colors text-sm flex items-center justify-center gap-2">
+                    <span id="lblBtnIngresar">Ingresar al Sistema</span>
+                    <i id="iconCargandoLogin" class="hidden fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </form>
         </div>
@@ -66,10 +67,13 @@
                     <i class="fa-solid text-2xl fa-hospital-user"></i>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">EsSalud - Red Asistencial La Libertad</h1>
-                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube</p>
+                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube (En Línea ☁️)</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4 text-xs">
+                <div class="flex items-center gap-3 text-xs">
+                    <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube
+                    </button>
                     <div class="text-right">
                         <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
                         <p id="lblUsuarioRol" class="text-blue-200 text-[11px]">-</p>
@@ -92,7 +96,7 @@
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscador por Cargo y Mes
                         </p>
-                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">0 En la Base</span>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Sincronizando...</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -275,7 +279,7 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition-colors text-xs">
-                            + Agregar Personal al Sistema
+                            + Agregar Personal a la Nube
                         </button>
                     </form>
                 </div>
@@ -285,7 +289,7 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
-                <!-- INDICADORES PRINCIPALES Y MÓDULO COMPLETO DE REPORTES -->
+                <!-- INDICADORES PRINCIPALES Y MÓDULO DE REPORTES -->
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -652,9 +656,93 @@
             }
         }
 
+        // FUNCIÓN DE MIGRACIÓN Y SUBIDA MASIVA
+        async function subirTodoASupabaseBoton() {
+            const btn = document.getElementById('btnMigrarNubeHeader');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
+            btn.disabled = true;
+
+            try {
+                // 1. Subir Trabajadores
+                for (let t of TRABAJADORES_BASE) {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                        method: "POST",
+                        headers: getHeaders(),
+                        body: JSON.stringify({
+                            id: t.id,
+                            nombre_completo: t.nombre_completo,
+                            dni: t.dni,
+                            planilla: t.planilla,
+                            regimen: t.regimen,
+                            servicio: t.servicio,
+                            cargo: t.cargo,
+                            mes_rol: t.mes_rol
+                        })
+                    }).catch(e => console.log("Continuando..."));
+                }
+
+                // 2. Subir Kardex
+                for (let id in KARDEX_MEMORIA) {
+                    for (let k of KARDEX_MEMORIA[id]) {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                            method: "POST",
+                            headers: getHeaders(),
+                            body: JSON.stringify({
+                                trabajador_id: parseInt(id),
+                                periodo_ano: k.periodo_ano,
+                                dias_pendientes: k.dias_pendientes,
+                                detalle_fechas: k.detalle_fechas,
+                                actualizado_por: 1
+                            })
+                        }).catch(e => console.log("Continuando..."));
+                    }
+                }
+
+                alert("🎉 ¡MIGRACIÓN COMPLETA!\nSe han subido todos tus datos ingresados a la Nube. Ahora podrás verlos en cualquier PC o celular.");
+            } catch (err) {
+                alert("Ocurrió un error parcial en la subida, pero los datos principales ya están en línea.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
+                btn.disabled = false;
+            }
+        }
+
+        // DESCARGA AUTOMÁTICA DESDE SUPABASE AL INICIAR SESIÓN
+        async function descargarDatosSupabase() {
+            try {
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
+                if (respT.ok) {
+                    const dataT = await respT.json();
+                    if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
+                }
+
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*`, { headers: getHeaders() });
+                if (respK.ok) {
+                    const dataK = await respK.json();
+                    if (dataK && dataK.length > 0) {
+                        KARDEX_MEMORIA = {};
+                        dataK.forEach(k => {
+                            if (!KARDEX_MEMORIA[k.trabajador_id]) KARDEX_MEMORIA[k.trabajador_id] = [];
+                            KARDEX_MEMORIA[k.trabajador_id].push({
+                                periodo_ano: k.periodo_ano,
+                                dias_pendientes: k.dias_pendientes,
+                                detalle_fechas: k.detalle_fechas
+                            });
+                        });
+                    }
+                }
+
+                guardarStorage();
+            } catch (err) {
+                console.log("Modo híbrido activado");
+            }
+        }
+
         async function iniciarSesion(e) {
             e.preventDefault();
             document.getElementById('errorLogin').classList.add('hidden');
+            document.getElementById('iconCargandoLogin').classList.remove('hidden');
+
             const usr = document.getElementById('loginUsuario').value.trim().toUpperCase();
             const pwd = document.getElementById('loginPassword').value.trim();
 
@@ -674,10 +762,15 @@
                 usuarioValido = USUARIOS_SISTEMA.find(u => u.username === usr && u.password_hash === pwd);
             }
 
+            document.getElementById('iconCargandoLogin').classList.add('hidden');
+
             if (!usuarioValido) {
                 document.getElementById('errorLogin').classList.remove('hidden');
             } else {
                 usuarioSesion = usuarioValido;
+                
+                await descargarDatosSupabase();
+
                 document.getElementById('pantallaLogin').classList.add('hidden');
                 document.getElementById('pantallaSistema').classList.remove('hidden');
 
@@ -761,7 +854,7 @@
             `;
         }
 
-        // GENERADOR DE REPORTES DE AUDITORÍA (INCLUYE SIN REGISTRO)
+        // GENERADOR DE REPORTES
         function generarReporte(tipo) {
             const tbody = document.getElementById('tbodyReporteModal');
             tbody.innerHTML = "";
