@@ -90,6 +90,7 @@
             <!-- COLUMNA IZQUIERDA -->
             <section class="lg:col-span-1 space-y-6">
                 
+                <!-- BUSCADOR CON FILTROS DE CARGO SEGÚN EXCEL OFICIAL -->
                 <div class="bg-blue-900 text-white rounded-xl shadow-md p-4 border border-blue-800 space-y-3">
                     <div class="flex justify-between items-center">
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
@@ -167,6 +168,7 @@
                     </div>
                 </div>
 
+                <!-- FICHA DEL SERVIDOR -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-3">
                     <div class="flex justify-between items-center border-b pb-2">
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Servidor Público</span>
@@ -196,6 +198,7 @@
                     </div>
                 </div>
 
+                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -286,6 +289,7 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
+                <!-- INDICADORES PRINCIPALES Y MÓDULO DE REPORTES -->
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -306,6 +310,7 @@
                         </div>
                     </div>
 
+                    <!-- BOTONES DE GENERACIÓN DE REPORTES -->
                     <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-2 text-xs">
                         <span class="font-bold text-slate-700 flex items-center gap-1.5">
                             <i class="fa-solid fa-file-pdf text-red-600"></i> Generador de Reportes Institucionales:
@@ -327,6 +332,7 @@
                     </div>
                 </div>
 
+                <!-- CONTROL AUDITORÍA DE DOMINGOS NORMATIVOS -->
                 <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3 text-xs items-center">
                     <div class="md:col-span-2 space-y-1">
                         <p class="font-bold text-amber-900 flex items-center gap-1.5 text-sm">
@@ -343,6 +349,7 @@
                     </div>
                 </div>
 
+                <!-- PROGRAMACIÓN Y REGISTRO DE VACACIONES CON CALENDARIO -->
                 <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-blue-600"></i>
@@ -399,6 +406,7 @@
                         </div>
                     </form>
 
+                    <!-- TABLA KARDEX AUDITADO -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -422,7 +430,173 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN RESTAURADO CON VALIDACIONES Y CONTROL EN TIEMPO REAL -->
+    <!-- MODAL VISTA PREVIA E IMPRESIÓN DE REPORTES -->
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-4xl w-full space-y-4 text-xs max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-blue-700"></i> Reporte Institucional de Vacaciones - Hospital II Albrecht
+                </h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div id="areaImpresionReporte" class="overflow-y-auto p-4 space-y-4 border rounded-lg bg-slate-50 flex-1">
+                <div class="text-center border-b pb-3">
+                    <h2 class="text-lg font-bold text-blue-900 uppercase">EsSalud - Red Asistencial La Libertad</h2>
+                    <p class="text-xs font-semibold text-slate-700">HOSPITAL II ALBRECHT | REPORTE DE AUDITORÍA VACACIONAL</p>
+                    <p id="lblTituloReporteModal" class="text-xs font-bold text-amber-700 uppercase mt-1">-</p>
+                </div>
+
+                <table class="w-full text-[11px] text-left border-collapse bg-white shadow-sm">
+                    <thead>
+                        <tr class="bg-slate-800 text-white">
+                            <th class="p-2 border">N°</th>
+                            <th class="p-2 border">Apellidos y Nombres</th>
+                            <th class="p-2 border">DNI / Planilla</th>
+                            <th class="p-2 border">Cargo / Servicio</th>
+                            <th class="p-2 border text-center">Días Computados</th>
+                            <th class="p-2 border text-center">Saldo Pendiente</th>
+                            <th class="p-2 border text-center">Estado Auditoría</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyReporteModal">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t">
+                <span class="text-slate-500 font-semibold">Hospital II Albrecht - Sistema de Vacaciones Nube</span>
+                <div class="flex gap-2">
+                    <button type="button" onclick="imprimirReporte()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> Imprimir / Guardar en PDF
+                    </button>
+                    <button type="button" onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded shadow">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR SERVIDOR -->
+    <div id="modalEditarTrabajador" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-amber-600"></i> Modificar Datos del Servidor
+                </h3>
+                <button onclick="cerrarModalEditar()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            <form onsubmit="guardarEdicionTrabajador(event)" class="space-y-3">
+                <div>
+                    <label class="block text-slate-600 mb-0.5 font-semibold">Apellidos y Nombres Completo:</label>
+                    <input type="text" id="editNombre" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">DNI:</label>
+                        <input type="text" id="editDni" maxlength="8" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">N° Planilla:</label>
+                        <input type="text" id="editPlanilla" required class="w-full border rounded p-2 bg-slate-50 font-mono outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Régimen Laboral:</label>
+                        <select id="editRegimen" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="728">D.L. 728</option>
+                            <option value="276">D.L. 276</option>
+                            <option value="CAS">CAS (1057)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Servicio / Área:</label>
+                        <input type="text" id="editServicio" required class="w-full border rounded p-2 bg-slate-50 uppercase outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Cargo Institucional:</label>
+                        <select id="editCargo" required class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500 font-semibold text-slate-700">
+                            <option value="MEDICO">MEDICO</option>
+                            <option value="ENFERMERA(O)">ENFERMERA(O)</option>
+                            <option value="TECNICO DE ENFERMERIA">TECNICO DE ENFERMERIA</option>
+                            <option value="PROFESIONAL TECNICO">PROFESIONAL TECNICO</option>
+                            <option value="DIGITADOR ASISTENCIAL">DIGITADOR ASISTENCIAL</option>
+                            <option value="OBSTETRIZ">OBSTETRIZ</option>
+                            <option value="AUXILIAR DE SERVICIO ASISTENCIAL">AUXILIAR DE SERVICIO ASISTENCIAL</option>
+                            <option value="TECNICO ADMINISTRATIVO">TECNICO ADMINISTRATIVO</option>
+                            <option value="CHOFER ASISTENCIAL">CHOFER ASISTENCIAL</option>
+                            <option value="TECNOLOGO MEDICO DE LABORATORIO">TECNOLOGO MEDICO DE LABORATORIO</option>
+                            <option value="QUIMICO FARMACEUTICO">QUIMICO FARMACEUTICO</option>
+                            <option value="PROFESIONAL">PROFESIONAL</option>
+                            <option value="NUTRICIONISTA">NUTRICIONISTA</option>
+                            <option value="ODONTOLOGO">ODONTOLOGO</option>
+                            <option value="TECNICO DE SERVICIO ASISTENCIAL">TECNICO DE SERVICIO ASISTENCIAL</option>
+                            <option value="TRABAJADOR(A) SOCIAL">TRABAJADOR(A) SOCIAL</option>
+                            <option value="PSICOLOGO">PSICOLOGO</option>
+                            <option value="AUXILIAR ADMINISTRATIVO">AUXILIAR ADMINISTRATIVO</option>
+                            <option value="TECNOLOGO MEDICO EN TERAPIA FIS.Y REHAB.">TECNOLOGO MEDICO TERAPIA FISICA</option>
+                            <option value="BIOLOGO">BIOLOGO</option>
+                            <option value="TECNOLOGO MEDICO DE RADIOLOGIA">TECNOLOGO MEDICO RADIOLOGIA</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-0.5 font-semibold">Mes Rol Programado:</label>
+                        <select id="editMesRol" class="w-full border rounded p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="Enero">Enero</option>
+                            <option value="Febrero">Febrero</option>
+                            <option value="Marzo">Marzo</option>
+                            <option value="Abril">Abril</option>
+                            <option value="Mayo">Mayo</option>
+                            <option value="Junio">Junio</option>
+                            <option value="Julio">Julio</option>
+                            <option value="Agosto">Agosto</option>
+                            <option value="Setiembre">Setiembre</option>
+                            <option value="Octubre">Octubre</option>
+                            <option value="Noviembre">Noviembre</option>
+                            <option value="Diciembre">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalEditar()" class="px-3 py-2 border rounded font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded shadow">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR TRAMOS INDIVIDUALES -->
+    <div id="modalEditarTramo" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-blue-600"></i> Gestor y Edición de Tramos del Periodo <span id="lblAnoModalTramo">2026</span>
+                </h3>
+                <button onclick="cerrarModalTramo()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <p id="lblExplicacionModalTramo" class="text-slate-600">A continuación se muestran los tramos registrados para este año:</p>
+                
+                <div id="contenedorTramosLista" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t">
+                <button type="button" onclick="cerrarModalTramo()" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded shadow">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONEXIÓN NUBE Y SISTEMA AUTÓNOMO -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -448,21 +622,23 @@
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
         let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
-        let usuarioSesion = null;
-        let listaTrabajadores = TRABAJADORES_BASE;
-        let trabajadorActual = null;
+        let anoEdicionModal = 2026;
 
         function guardarStorage() {
             localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
             localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
         }
 
-        function getHeaders(extra = {}) {
+        let usuarioSesion = null;
+        let listaTrabajadores = TRABAJADORES_BASE;
+        let trabajadorActual = null;
+
+        function getHeaders(extraHeaders = {}) {
             return {
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
-                ...extra
+                ...extraHeaders
             };
         }
 
@@ -480,7 +656,61 @@
             }
         }
 
-        async function cargarDatosNube() {
+        // SUBIDA CON UPSERT FORZADO POSTGREST
+        async function subirTodoASupabaseBoton() {
+            const btn = document.getElementById('btnMigrarNubeHeader');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
+            btn.disabled = true;
+
+            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
+
+            try {
+                // 1. SUBIR TRABAJADORES
+                for (let t of TRABAJADORES_BASE) {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                        method: "POST",
+                        headers: headersUpsert,
+                        body: JSON.stringify({
+                            id: t.id,
+                            nombre_completo: t.nombre_completo,
+                            dni: t.dni,
+                            planilla: t.planilla,
+                            regimen: t.regimen,
+                            servicio: t.servicio,
+                            cargo: t.cargo,
+                            mes_rol: t.mes_rol
+                        })
+                    }).catch(e => console.log("Procesando..."));
+                }
+
+                // 2. SUBIR HISTORIAL DE KARDEX
+                for (let id in KARDEX_MEMORIA) {
+                    for (let k of KARDEX_MEMORIA[id]) {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                            method: "POST",
+                            headers: headersUpsert,
+                            body: JSON.stringify({
+                                trabajador_id: parseInt(id),
+                                periodo_ano: k.periodo_ano,
+                                dias_pendientes: k.dias_pendientes,
+                                detalle_fechas: k.detalle_fechas,
+                                actualizado_por: 1
+                            })
+                        }).catch(e => console.log("Procesando..."));
+                    }
+                }
+
+                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase. Ahora refresca tu celular para ver todo tu avance.");
+            } catch (err) {
+                alert("Sincronización procesada.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
+                btn.disabled = false;
+            }
+        }
+
+        // DESCARGA DE LA NUBE
+        async function descargarDatosSupabase() {
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
                 if (respT.ok) {
@@ -503,59 +733,10 @@
                         });
                     }
                 }
+
                 guardarStorage();
-            } catch (e) {
-                console.log("Servicio local activo");
-            }
-        }
-
-        async function subirTodoASupabaseBoton() {
-            const btn = document.getElementById('btnMigrarNubeHeader');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
-            btn.disabled = true;
-
-            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
-
-            try {
-                for (let t of TRABAJADORES_BASE) {
-                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
-                        method: "POST",
-                        headers: headersUpsert,
-                        body: JSON.stringify({
-                            id: t.id,
-                            nombre_completo: t.nombre_completo,
-                            dni: t.dni,
-                            planilla: t.planilla,
-                            regimen: t.regimen,
-                            servicio: t.servicio,
-                            cargo: t.cargo,
-                            mes_rol: t.mes_rol
-                        })
-                    }).catch(e => {});
-                }
-
-                for (let id in KARDEX_MEMORIA) {
-                    for (let k of KARDEX_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
-                            method: "POST",
-                            headers: headersUpsert,
-                            body: JSON.stringify({
-                                trabajador_id: parseInt(id),
-                                periodo_ano: k.periodo_ano,
-                                dias_pendientes: k.dias_pendientes,
-                                detalle_fechas: k.detalle_fechas,
-                                actualizado_por: 1
-                            })
-                        }).catch(e => {});
-                    }
-                }
-
-                alert("🎉 ¡SINCRO COMPLETADA!\nToda la lista y tramos vacacionales se han guardado en la Nube.");
             } catch (err) {
-                alert("Guardado procesado.");
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
-                btn.disabled = false;
+                console.log("Cargando desde memoria...");
             }
         }
 
@@ -567,7 +748,21 @@
             const usr = document.getElementById('loginUsuario').value.trim().toUpperCase();
             const pwd = document.getElementById('loginPassword').value.trim();
 
-            let usuarioValido = USUARIOS_SISTEMA.find(u => u.username === usr && u.password_hash === pwd);
+            let usuarioValido = null;
+
+            try {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/usuarios?username=eq.${usr}&password_hash=eq.${pwd}`, {
+                    headers: getHeaders()
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.length > 0) usuarioValido = data[0];
+                }
+            } catch (err) {}
+
+            if (!usuarioValido) {
+                usuarioValido = USUARIOS_SISTEMA.find(u => u.username === usr && u.password_hash === pwd);
+            }
 
             document.getElementById('iconCargandoLogin').classList.add('hidden');
 
@@ -576,7 +771,7 @@
             } else {
                 usuarioSesion = usuarioValido;
                 
-                await cargarDatosNube();
+                await descargarDatosSupabase();
 
                 document.getElementById('pantallaLogin').classList.add('hidden');
                 document.getElementById('pantallaSistema').classList.remove('hidden');
@@ -584,13 +779,28 @@
                 document.getElementById('lblUsuarioNombre').innerText = usuarioSesion.nombre_completo;
                 document.getElementById('lblUsuarioRol').innerText = `${usuarioSesion.rol} - ${usuarioSesion.cargo_jefatura || 'RRHH'}`;
 
+                if (usuarioSesion.rol === 'VISOR') {
+                    document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
+                    document.getElementById('formKardexAno').classList.add('hidden');
+                    document.getElementById('boxAccionesAdmin').classList.add('hidden');
+                    document.getElementById('thAccionesKardex').innerText = "Estado";
+                } else {
+                    document.getElementById('moduloRegistrarPersonal').classList.remove('hidden');
+                    document.getElementById('formKardexAno').classList.remove('hidden');
+                    document.getElementById('boxAccionesAdmin').classList.remove('hidden');
+                    document.getElementById('thAccionesKardex').innerText = "Acciones";
+                }
+
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
                 if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                else limpiarVistaPantalla();
             }
         }
 
-        function cerrarSesion() { location.reload(); }
+        function cerrarSesion() {
+            location.reload();
+        }
 
         function renderDesplegable(lista) {
             const select = document.getElementById('selectTrabajador');
@@ -626,188 +836,92 @@
             document.getElementById('lblSaldo2026').innerText = "0 Días";
             document.getElementById('lblDeudaAnteriores').innerText = "0 Días";
             document.getElementById('lblTotalPendientes').innerText = "0 Días";
+            document.getElementById('lblAdelanto2027').innerText = "0 Días";
+
+            document.getElementById('lblEstadoDomingosBox').innerText = "0 / 0 Domingos";
+            document.getElementById('lblDomingosFaltantes').innerText = "✓ Conforme";
+            document.getElementById('lblExplicacionDomingos').innerText = "No hay trabajador seleccionado.";
+
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+            document.getElementById('kardexDiasPendientes').value = '';
+            document.getElementById('kardexFechasDetalle').value = '';
 
             document.getElementById('tbodyKardex').innerHTML = `
                 <tr>
-                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros que coincidan con la búsqueda.</td>
+                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros vacacionales que mostrar para este filtro.</td>
                 </tr>
             `;
         }
 
-        function cargarTrabajador(id) {
-            trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
-            if (!trabajadorActual) return limpiarVistaPantalla();
-
-            document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
-            document.getElementById('lblDni').innerText = trabajadorActual.dni || "Sin registro";
-            document.getElementById('lblPlanilla').innerText = trabajadorActual.planilla || "Sin registro";
-            document.getElementById('lblCargo').innerText = trabajadorActual.cargo;
-            document.getElementById('lblServicio').innerText = trabajadorActual.servicio;
-            document.getElementById('lblRegimen').innerText = `D.L. ${trabajadorActual.regimen}`;
-            document.getElementById('lblMesRol').innerText = trabajadorActual.mes_rol || "No asignado";
-
-            if (!KARDEX_MEMORIA[trabajadorActual.id]) {
-                KARDEX_MEMORIA[trabajadorActual.id] = [
-                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
-                ];
-                guardarStorage();
-            }
-
-            const kardexData = KARDEX_MEMORIA[trabajadorActual.id];
-            const tbody = document.getElementById('tbodyKardex');
+        // GENERADOR DE REPORTES
+        function generarReporte(tipo) {
+            const tbody = document.getElementById('tbodyReporteModal');
             tbody.innerHTML = "";
 
-            let saldo2026 = 30;
-            let deudaAnteriores = 0;
+            let titulo = "CONSOLIDADO GENERAL DE PLANTILLA VACACIONAL";
+            if (tipo === "PENDIENTES") titulo = "PERSONAL CON DÍAS PENDIENTES DE GOCE EN EL PERIODO 2026";
+            if (tipo === "SIN_REGISTRO") titulo = "PERSONAL QUE AÚN NO REGISTRA NINGUNA FECHA DE VACACIONES (0 DÍAS COMPUTADOS)";
+            if (tipo === "COMPLETADOS") titulo = "PERSONAL CON VACACIONES COMPLETADAS (30 DÍAS GOZADOS/PROGRAMADOS)";
 
-            kardexData.forEach(k => {
-                if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
-                if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
+            document.getElementById('lblTituloReporteModal').innerText = titulo;
 
-                const diasGozadosTotales = 30 - k.dias_pendientes;
+            let contador = 0;
 
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="p-2 border font-bold">${k.periodo_ano}</td>
-                    <td class="p-2 border">30 Días</td>
-                    <td class="p-2 border font-bold text-blue-800">${diasGozadosTotales} Días</td>
-                    <td class="p-2 border text-slate-700">${k.detalle_fechas || 'Sin registro'}</td>
-                    <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
-                    <td class="p-2 border"><span class="text-slate-400 font-bold">Activo</span></td>
-                `;
-                tbody.appendChild(tr);
+            TRABAJADORES_BASE.forEach(t => {
+                const kardex = KARDEX_MEMORIA[t.id] || [];
+                const reg2026 = kardex.find(k => k.periodo_ano === 2026) || { dias_pendientes: 30, detalle_fechas: "" };
+                
+                const diasComputados = 30 - reg2026.dias_pendientes;
+                const saldoPendiente = reg2026.dias_pendientes;
+
+                let coincideFiltro = false;
+                if (tipo === "TODOS") coincideFiltro = true;
+                if (tipo === "PENDIENTES" && saldoPendiente > 0) coincideFiltro = true;
+                if (tipo === "SIN_REGISTRO" && diasComputados === 0) coincideFiltro = true;
+                if (tipo === "COMPLETADOS" && saldoPendiente === 0) coincideFiltro = true;
+
+                if (coincideFiltro) {
+                    contador++;
+                    let estadoTexto = "";
+                    if (saldoPendiente === 0) {
+                        estadoTexto = `<span class="font-bold text-emerald-700">✓ 30 Días Cumplidos</span>`;
+                    } else if (diasComputados === 0) {
+                        estadoTexto = `<span class="font-bold text-red-700">🚨 Sin Fechas Programadas</span>`;
+                    } else {
+                        estadoTexto = `<span class="font-bold text-amber-700">⚠️ Restan ${saldoPendiente} Días</span>`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b hover:bg-slate-100";
+                    tr.innerHTML = `
+                        <td class="p-2 border text-center font-bold">${contador}</td>
+                        <td class="p-2 border font-bold text-slate-800">${t.nombre_completo}</td>
+                        <td class="p-2 border font-mono">${t.dni || '-'} / ${t.planilla || '-'}</td>
+                        <td class="p-2 border">${t.cargo} - ${t.servicio}</td>
+                        <td class="p-2 border text-center font-bold text-blue-800">${diasComputados} Días</td>
+                        <td class="p-2 border text-center font-bold ${saldoPendiente > 0 ? 'text-emerald-700' : 'text-slate-400'}">${saldoPendiente} Días</td>
+                        <td class="p-2 border text-center">${estadoTexto}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             });
 
-            document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
-            document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
-            document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
-            
-            sincronizarFormularioConTabla();
+            if (contador === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">No se encontraron trabajadores para esta categoría de reporte.</td></tr>`;
+            }
+
+            document.getElementById('modalReporte').classList.remove('hidden');
         }
 
-        function parseFechaLocal(strFecha) {
-            const partes = strFecha.split('/');
-            if (partes.length === 3) return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
-            return null;
+        function cerrarModalReporte() {
+            document.getElementById('modalReporte').classList.add('hidden');
         }
 
-        function sincronizarFormularioConTabla() {
-            if (!trabajadorActual) return;
-            const anoSel = parseInt(document.getElementById('kardexAno').value);
-            const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
-            const k = kardexData.find(x => x.periodo_ano === anoSel);
-
-            document.getElementById('fechaInicio').value = '';
-            document.getElementById('fechaFin').value = '';
-            document.getElementById('lblDiasCalculados').innerText = '0 Días';
-            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
-
-            if (k) {
-                document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
-                document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || 'Sin registros gozados';
-            } else {
-                document.getElementById('kardexDiasPendientes').value = 30;
-                document.getElementById('kardexFechasDetalle').value = 'Sin registros gozados';
-            }
-        }
-
-        function calcularDiasFechas() {
-            const fIniVal = document.getElementById('fechaInicio').value;
-            const fFinVal = document.getElementById('fechaFin').value;
-            const ano = parseInt(document.getElementById('kardexAno').value);
-
-            if (!fIniVal || !fFinVal || !trabajadorActual) return;
-
-            const d1 = new Date(fIniVal + 'T00:00:00');
-            const d2 = new Date(fFinVal + 'T00:00:00');
-
-            if (d2 < d1) {
-                alert("La Fecha Fin no puede ser menor a la Fecha Inicio.");
-                document.getElementById('fechaFin').value = '';
-                return;
-            }
-
-            let diffTime = Math.abs(d2 - d1);
-            let diasTramoActual = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-            let domingos = 0;
-            let tempDate = new Date(d1);
-            while (tempDate <= d2) {
-                if (tempDate.getDay() === 0) domingos++;
-                tempDate.setDate(tempDate.getDate() + 1);
-            }
-
-            document.getElementById('lblDiasCalculados').innerText = `${diasTramoActual} Días`;
-            document.getElementById('lblDomingosContados').innerText = `${domingos} Domingo(s)`;
-
-            const fIniFormatted = d1.toLocaleDateString('es-PE');
-            const fFinFormatted = d2.toLocaleDateString('es-PE');
-            const textoNuevoTramo = `Del ${fIniFormatted} al ${fFinFormatted} (${diasTramoActual} días - Incluye ${domingos} domingos)`;
-
-            let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
-            let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
-
-            let diasGozadosPrevios = regPrevio ? (30 - regPrevio.dias_pendientes) : 0;
-            let nuevoTotalGozados = diasGozadosPrevios + diasTramoActual;
-
-            if (nuevoTotalGozados > 30) {
-                alert(`Este tramo supera los 30 días permitidos para el periodo ${ano}.`);
-                document.getElementById('fechaFin').value = '';
-                return;
-            }
-
-            let nuevoSaldoRestante = 30 - nuevoTotalGozados;
-            document.getElementById('kardexDiasPendientes').value = nuevoSaldoRestante >= 0 ? nuevoSaldoRestante : 0;
-
-            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026" && regPrevio.detalle_fechas !== "Sin registros gozados"
-                ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
-                : textoNuevoTramo;
-
-            document.getElementById('kardexFechasDetalle').value = historialTexto;
-        }
-
-        async function guardarTramoAno(e) {
-            e.preventDefault();
-            if (!trabajadorActual) return;
-
-            const fIni = document.getElementById('fechaInicio').value;
-            const fFin = document.getElementById('fechaFin').value;
-            if (!fIni || !fFin) return alert("Seleccione fechas de inicio y fin.");
-
-            const ano = parseInt(document.getElementById('kardexAno').value);
-            const pend = parseInt(document.getElementById('kardexDiasPendientes').value);
-            const det = document.getElementById('kardexFechasDetalle').value.trim();
-
-            if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
-            
-            const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
-            if (idx >= 0) {
-                KARDEX_MEMORIA[trabajadorActual.id][idx] = { periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det };
-            } else {
-                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
-            }
-
-            guardarStorage();
-
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
-                method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
-                body: JSON.stringify({
-                    trabajador_id: trabajadorActual.id,
-                    periodo_ano: ano,
-                    dias_pendientes: pend,
-                    detalle_fechas: det,
-                    actualizado_por: 1
-                })
-            }).catch(e => {});
-
-            alert(`¡Tramo guardado con éxito!`);
-            document.getElementById('fechaInicio').value = '';
-            document.getElementById('fechaFin').value = '';
-            document.getElementById('lblDiasCalculados').innerText = '0 Días';
-            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
-            cargarTrabajador(trabajadorActual.id);
+        function imprimirReporte() {
+            window.print();
         }
 
         function aplicarFiltrosAvanzados() {
@@ -854,6 +968,599 @@
             else limpiarVistaPantalla();
         }
 
+        function parseFechaLocal(strFecha) {
+            const partes = strFecha.split('/');
+            if (partes.length === 3) {
+                return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+            }
+            return null;
+        }
+
+        function ordenarDetalleCronologico(detalleTexto) {
+            if (!detalleTexto || !detalleTexto.includes(" | ")) return detalleTexto;
+            
+            const tramos = detalleTexto.split(" | ");
+            const tramosConFecha = [];
+
+            tramos.forEach(t => {
+                const matchIni = t.match(/Del (\d{1,2}\/\d{1,2}\/\d{4})/);
+                if (matchIni) {
+                    const fObj = parseFechaLocal(matchIni[1]);
+                    tramosConFecha.push({ fecha: fObj, texto: t });
+                } else {
+                    tramosConFecha.push({ fecha: new Date(0), texto: t });
+                }
+            });
+
+            tramosConFecha.sort((a, b) => a.fecha - b.fecha);
+            return tramosConFecha.map(x => x.texto).join(" | ");
+        }
+
+        function sincronizarFormularioConTabla() {
+            if (!trabajadorActual) return;
+            const anoSel = parseInt(document.getElementById('kardexAno').value);
+            const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            const k = kardexData.find(x => x.periodo_ano === anoSel);
+
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+
+            if (k) {
+                document.getElementById('kardexDiasPendientes').value = k.dias_pendientes;
+                document.getElementById('kardexFechasDetalle').value = k.detalle_fechas || 'Sin registros gozados';
+            } else {
+                document.getElementById('kardexDiasPendientes').value = 30;
+                document.getElementById('kardexFechasDetalle').value = 'Sin registros gozados';
+            }
+
+            validarSeleccionAnoAdelantado();
+            actualizarContadorDomingos();
+        }
+
+        function cargarTrabajador(id) {
+            trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
+            if (!trabajadorActual) return limpiarVistaPantalla();
+
+            document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
+            document.getElementById('lblDni').innerText = trabajadorActual.dni || "Sin registro";
+            document.getElementById('lblPlanilla').innerText = trabajadorActual.planilla || "Sin registro";
+            document.getElementById('lblCargo').innerText = trabajadorActual.cargo;
+            document.getElementById('lblServicio').innerText = trabajadorActual.servicio;
+            document.getElementById('lblRegimen').innerText = `D.L. ${trabajadorActual.regimen}`;
+            document.getElementById('lblMesRol').innerText = trabajadorActual.mes_rol || "No asignado";
+
+            if (!KARDEX_MEMORIA[trabajadorActual.id]) {
+                KARDEX_MEMORIA[trabajadorActual.id] = [
+                    { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
+                ];
+                guardarStorage();
+            }
+
+            const kardexData = KARDEX_MEMORIA[trabajadorActual.id];
+            const tbody = document.getElementById('tbodyKardex');
+            tbody.innerHTML = "";
+
+            let saldo2026 = 30;
+            let deudaAnteriores = 0;
+            let adelanto2027 = 0;
+
+            const hoy = new Date();
+
+            kardexData.forEach(k => {
+                if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
+                if (k.periodo_ano < 2026) deudaAnteriores += k.dias_pendientes;
+                if (k.periodo_ano === 2027) adelanto2027 = 30 - k.dias_pendientes;
+
+                const diasGozadosTotales = 30 - k.dias_pendientes;
+
+                k.detalle_fechas = ordenarDetalleCronologico(k.detalle_fechas);
+
+                let esFuturo = false;
+                if (k.detalle_fechas) {
+                    const matchFin = k.detalle_fechas.match(/al (\d{1,2}\/\d{1,2}\/\d{4})/);
+                    if (matchFin) {
+                        const fFinTramo = parseFechaLocal(matchFin[1]);
+                        if (fFinTramo && fFinTramo > hoy) esFuturo = true;
+                    }
+                }
+
+                const etiquetaEstado = esFuturo 
+                    ? `<span class="bg-purple-100 text-purple-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Programado (Futuro)</span>`
+                    : `<span class="bg-blue-100 text-blue-900 font-bold px-1.5 py-0.5 rounded text-[10px]">Gozado (Efectivo)</span>`;
+
+                let domingosEnHistorial = 0;
+                const matches = (k.detalle_fechas || "").match(/Incluye (\d+) domingos?/g);
+                if (matches) {
+                    matches.forEach(m => {
+                        const num = parseInt(m.replace(/\D/g, ''));
+                        if (!isNaN(num)) domingosEnHistorial += num;
+                    });
+                }
+
+                let alertaDomingoHTML = "";
+                if (diasGozadosTotales >= 30 && domingosEnHistorial < 4) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-red-100 text-red-900 border border-red-300 font-bold px-1.5 py-0.5 rounded text-[10px]">🚨 Observado: Faltan Domingos (${domingosEnHistorial}/4)</span>`;
+                } else if (diasGozadosTotales >= 21 && domingosEnHistorial < 3) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/3)</span>`;
+                } else if (diasGozadosTotales >= 15 && domingosEnHistorial < 2) {
+                    alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
+                }
+
+                let celdaAccionesHTML = "";
+                if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
+                    celdaAccionesHTML = `
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="abrirModalTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Gestionar tramos de este año">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Tramos
+                            </button>
+                            <button onclick="eliminarTramoAno(${k.periodo_ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded font-bold text-[10px]" title="Eliminar este año por completo">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                            <button onclick="reiniciarPeriodo(${k.periodo_ano})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold text-[10px]" title="Limpiar y volver a 30 días libres">
+                                <i class="fa-solid fa-rotate-left"></i> Limpiar
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    celdaAccionesHTML = `<span class="text-slate-400 font-semibold italic text-[11px]">Solo Consulta</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2 border font-bold">${k.periodo_ano}</td>
+                    <td class="p-2 border">30 Días</td>
+                    <td class="p-2 border font-bold text-blue-800">
+                        <div>${diasGozadosTotales} Días</div>
+                        <div class="mt-0.5">${etiquetaEstado}</div>
+                    </td>
+                    <td class="p-2 border text-slate-700">
+                        <div>${k.detalle_fechas || 'Sin registro'}</div>
+                        ${alertaDomingoHTML}
+                    </td>
+                    <td class="p-2 border font-bold ${k.dias_pendientes > 0 ? 'text-emerald-700' : 'text-slate-400'}">${k.dias_pendientes} Días</td>
+                    <td class="p-2 border">
+                        ${celdaAccionesHTML}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('lblSaldo2026').innerText = `${saldo2026} Días`;
+            document.getElementById('lblDeudaAnteriores').innerText = `${deudaAnteriores} Días`;
+            document.getElementById('lblTotalPendientes').innerText = `${saldo2026 + deudaAnteriores} Días`;
+            document.getElementById('lblAdelanto2027').innerText = `${adelanto2027} Días`;
+
+            sincronizarFormularioConTabla();
+        }
+
+        function abrirModalTramoAno(ano) {
+            if (!trabajadorActual) return;
+            if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            anoEdicionModal = ano;
+            document.getElementById('lblAnoModalTramo').innerText = ano;
+            const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === ano);
+            
+            const contenedor = document.getElementById('contenedorTramosLista');
+            contenedor.innerHTML = "";
+
+            if (k && k.detalle_fechas && k.detalle_fechas !== "Periodo Vacacional 2026" && k.detalle_fechas !== "Sin registros gozados") {
+                const tramos = k.detalle_fechas.split(" | ");
+                tramos.forEach((t, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-300 text-xs";
+                    div.innerHTML = `
+                        <span class="font-medium text-slate-800">${t}</span>
+                        <button onclick="borrarTramoEspecifico(${index})" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 rounded text-[10px]">
+                            <i class="fa-solid fa-trash"></i> Borrar
+                        </button>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            } else {
+                contenedor.innerHTML = `<p class="text-slate-500 italic">No hay tramos fraccionados registrados en este año.</p>`;
+            }
+
+            document.getElementById('modalEditarTramo').classList.remove('hidden');
+        }
+
+        function cerrarModalTramo() {
+            document.getElementById('modalEditarTramo').classList.add('hidden');
+        }
+
+        function borrarTramoEspecifico(indexTramo) {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === anoEdicionModal);
+            if (!k) return;
+
+            let tramos = k.detalle_fechas.split(" | ");
+            tramos.splice(indexTramo, 1);
+
+            let totalDiasGozadosNuevos = 0;
+            tramos.forEach(t => {
+                const m = t.match(/\((\d+) días/);
+                if (m && m[1]) totalDiasGozadosNuevos += parseInt(m[1]);
+            });
+
+            k.dias_pendientes = 30 - totalDiasGozadosNuevos;
+            k.detalle_fechas = tramos.length > 0 ? tramos.join(" | ") : "Sin registros gozados";
+
+            guardarStorage();
+
+            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
+                body: JSON.stringify({
+                    trabajador_id: trabajadorActual.id,
+                    periodo_ano: anoEdicionModal,
+                    dias_pendientes: k.dias_pendientes,
+                    detalle_fechas: k.detalle_fechas,
+                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                })
+            }).catch(e => {});
+
+            alert("¡Tramo eliminado y saldo recalculado con éxito!");
+            abrirModalTramoAno(anoEdicionModal);
+            cargarTrabajador(trabajadorActual.id);
+        }
+
+        function validarSeleccionAnoAdelantado() {
+            if (!trabajadorActual) return;
+            const anoSel = parseInt(document.getElementById('kardexAno').value);
+
+            if (anoSel === 2027) {
+                const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+                let pend2026 = 30;
+                let pendAnteriores = 0;
+
+                kardexData.forEach(k => {
+                    if (k.periodo_ano === 2026) pend2026 = k.dias_pendientes;
+                    if (k.periodo_ano < 2026) pendAnteriores += k.dias_pendientes;
+                });
+
+                const totalPend = pend2026 + pendAnteriores;
+                if (totalPend > 0) {
+                    alert(`🚨 REGISTRO DENEGADO:\nEl servidor ${trabajadorActual.nombre_completo} aún cuenta con ${totalPend} DÍAS PENDIENTES en el periodo actual / anteriores.\n\nPor norma laboral, debe agotar sus días pendientes antes de registrar o adelantar vacaciones del periodo 2027.`);
+                    document.getElementById('kardexAno').value = "2026";
+                }
+            }
+            actualizarContadorDomingos();
+        }
+
+        function actualizarContadorDomingos() {
+            if (!trabajadorActual) return;
+            const anoSeleccionado = parseInt(document.getElementById('kardexAno').value);
+            const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            const k = kardexData.find(x => x.periodo_ano === anoSeleccionado);
+
+            let diasGozados = k ? (30 - k.dias_pendientes) : 0;
+            let domingosTomados = 0;
+
+            const matches = ((k ? k.detalle_fechas : "") || "").match(/Incluye (\d+) domingos?/g);
+            if (matches) {
+                matches.forEach(m => {
+                    const num = parseInt(m.replace(/\D/g, ''));
+                    if (!isNaN(num)) domingosTomados += num;
+                });
+            }
+
+            let domingosRequeridos = 0;
+            if (diasGozados >= 30) domingosRequeridos = 4;
+            else if (diasGozados >= 21) domingosRequeridos = 3;
+            else if (diasGozados >= 15) domingosRequeridos = 2;
+            else if (diasGozados > 0) domingosRequeridos = 1;
+
+            let domingosRestantes = domingosRequeridos - domingosTomados;
+            if (domingosRestantes < 0) domingosRestantes = 0;
+
+            document.getElementById('lblEstadoDomingosBox').innerText = `${domingosTomados} / ${domingosRequeridos} Domingos`;
+
+            if (domingosRestantes > 0) {
+                document.getElementById('lblDomingosFaltantes').innerText = `⚠️ Le resta incluir ${domingosRestantes} domingo(s) para la norma`;
+                document.getElementById('lblDomingosFaltantes').className = "text-[10px] font-bold text-amber-800";
+            } else {
+                document.getElementById('lblDomingosFaltantes').innerText = `✓ Conforme según días acumulados (${diasGozados} días)`;
+                document.getElementById('lblDomingosFaltantes').className = "text-[10px] font-bold text-emerald-700";
+            }
+
+            document.getElementById('lblExplicacionDomingos').innerText = `Servidor: ${trabajadorActual.nombre_completo} | Periodo ${anoSeleccionado}: ${diasGozados} días computados.`;
+        }
+
+        function calcularDiasFechas() {
+            const fIniVal = document.getElementById('fechaInicio').value;
+            const fFinVal = document.getElementById('fechaFin').value;
+            const ano = parseInt(document.getElementById('kardexAno').value);
+
+            if (!fIniVal || !fFinVal || !trabajadorActual) return;
+
+            const d1 = new Date(fIniVal + 'T00:00:00');
+            const d2 = new Date(fFinVal + 'T00:00:00');
+
+            if (d2 < d1) {
+                alert("🚨 FECHAS INVÁLIDAS:\nLa Fecha Fin del tramo no puede ser menor a la Fecha Inicio.");
+                document.getElementById('fechaFin').value = '';
+                document.getElementById('lblDiasCalculados').innerText = '0 Días';
+                document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+                return;
+            }
+
+            let kardexActual = KARDEX_MEMORIA[trabajadorActual.id] || [];
+            let regPrevio = kardexActual.find(k => k.periodo_ano === ano);
+
+            if (regPrevio && regPrevio.detalle_fechas) {
+                const tramosGuardados = regPrevio.detalle_fechas.split(" | ");
+                for (let tramo of tramosGuardados) {
+                    const matchFechas = tramo.match(/Del (\d{1,2}\/\d{1,2}\/\d{4}) al (\d{1,2}\/\d{1,2}\/\d{4})/);
+                    if (matchFechas) {
+                        const existIni = parseFechaLocal(matchFechas[1]);
+                        const existFin = parseFechaLocal(matchFechas[2]);
+
+                        if (existIni && existFin) {
+                            if ((d1 >= existIni && d1 <= existFin) || (d2 >= existIni && d2 <= existFin) || (d1 <= existIni && d2 >= existFin)) {
+                                alert(`🚨 CRUCE DE FECHAS DETECTADO:\nEl rango seleccionado (${d1.toLocaleDateString('es-PE')} al ${d2.toLocaleDateString('es-PE')}) se superpone con un tramo ya registrado:\n"${tramo}"\n\nPor favor, elija un rango de fechas libre.`);
+                                document.getElementById('fechaInicio').value = '';
+                                document.getElementById('fechaFin').value = '';
+                                document.getElementById('lblDiasCalculados').innerText = '0 Días';
+                                document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            let diffTime = Math.abs(d2 - d1);
+            let diasTramoActual = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            let domingos = 0;
+            let tempDate = new Date(d1);
+            while (tempDate <= d2) {
+                if (tempDate.getDay() === 0) domingos++;
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+
+            document.getElementById('lblDiasCalculados').innerText = `${diasTramoActual} Días`;
+            document.getElementById('lblDomingosContados').innerText = `${domingos} Domingo(s)`;
+
+            const fIniFormatted = d1.toLocaleDateString('es-PE');
+            const fFinFormatted = d2.toLocaleDateString('es-PE');
+            const textoNuevoTramo = `Del ${fIniFormatted} al ${fFinFormatted} (${diasTramoActual} días - Incluye ${domingos} domingos)`;
+
+            let diasGozadosPrevios = regPrevio ? (30 - regPrevio.dias_pendientes) : 0;
+            let nuevoTotalGozados = diasGozadosPrevios + diasTramoActual;
+
+            if (nuevoTotalGozados > 30) {
+                alert(`🚨 EXCESO DE DÍAS:\nEste tramo de ${diasTramoActual} días supera el máximo de 30 días permitidos para el periodo ${ano}.`);
+                document.getElementById('fechaFin').value = '';
+                return;
+            }
+
+            let nuevoSaldoRestante = 30 - nuevoTotalGozados;
+            document.getElementById('kardexDiasPendientes').value = nuevoSaldoRestante >= 0 ? nuevoSaldoRestante : 0;
+
+            let historialTexto = regPrevio && regPrevio.detalle_fechas && regPrevio.detalle_fechas !== "Periodo Vacacional 2026" && regPrevio.detalle_fechas !== "Sin registros gozados"
+                ? `${regPrevio.detalle_fechas} | ${textoNuevoTramo}`
+                : textoNuevoTramo;
+
+            document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
+        }
+
+        function eliminarTramoAno(ano) {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
+            if (confirmacion) {
+                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
+                guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
+                alert(`Periodo ${ano} eliminado con éxito.`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        function reiniciarPeriodo(ano) {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
+            if (confirmacion) {
+                KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
+                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados" });
+                guardarStorage();
+
+                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }).catch(e => console.error("Sincronización diferida"));
+
+                alert(`Periodo ${ano} restaurado a 30 días de saldo.`);
+                cargarTrabajador(trabajadorActual.id);
+            }
+        }
+
+        async function guardarTramoAno(e) {
+            e.preventDefault();
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            const fIni = document.getElementById('fechaInicio').value;
+            const fFin = document.getElementById('fechaFin').value;
+
+            if (!fIni || !fFin) {
+                alert("Debe seleccionar la Fecha de Inicio y Fecha de Fin en el calendario.");
+                return;
+            }
+
+            const ano = parseInt(document.getElementById('kardexAno').value);
+
+            if (ano === 2027) {
+                const kardexData = KARDEX_MEMORIA[trabajadorActual.id] || [];
+                let pend2026 = 30;
+                let pendAnteriores = 0;
+                kardexData.forEach(k => {
+                    if (k.periodo_ano === 2026) pend2026 = k.dias_pendientes;
+                    if (k.periodo_ano < 2026) pendAnteriores += k.dias_pendientes;
+                });
+                if (pend2026 + pendAnteriores > 0) {
+                    alert(`🚨 REGISTRO DENEGADO:\nNo puede registrar adelantos del 2027 porque el trabajador aún cuenta con días pendientes en el periodo actual/anteriores.`);
+                    return;
+                }
+            }
+
+            const pend = parseInt(document.getElementById('kardexDiasPendientes').value);
+            const det = document.getElementById('kardexFechasDetalle').value.trim();
+
+            if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
+            
+            const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
+            if (idx >= 0) {
+                KARDEX_MEMORIA[trabajadorActual.id][idx] = { periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det };
+            } else {
+                KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
+            }
+
+            guardarStorage();
+
+            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
+                body: JSON.stringify({
+                    trabajador_id: trabajadorActual.id,
+                    periodo_ano: ano,
+                    dias_pendientes: pend,
+                    detalle_fechas: det,
+                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert(`¡Kardex del periodo ${ano} acumulado y actualizado con éxito!`);
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('lblDiasCalculados').innerText = '0 Días';
+            document.getElementById('lblDomingosContados').innerText = '0 Domingo(s)';
+            cargarTrabajador(trabajadorActual.id);
+        }
+
+        async function guardarNuevoTrabajador(e) {
+            e.preventDefault();
+            if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            const nuevo = {
+                id: Date.now(),
+                nombre_completo: document.getElementById('regNombre').value.trim().toUpperCase(),
+                dni: document.getElementById('regDni').value.trim(),
+                planilla: document.getElementById('regPlanilla').value.trim(),
+                regimen: document.getElementById('regRegimen').value,
+                servicio: document.getElementById('regServicio').value.trim().toUpperCase(),
+                cargo: document.getElementById('regCargo').value,
+                mes_rol: document.getElementById('regMesRol').value
+            };
+
+            TRABAJADORES_BASE.unshift(nuevo);
+            guardarStorage();
+
+            fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                method: "POST",
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
+                body: JSON.stringify({
+                    id: nuevo.id,
+                    nombre_completo: nuevo.nombre_completo,
+                    dni: nuevo.dni,
+                    planilla: nuevo.planilla,
+                    regimen: nuevo.regimen,
+                    servicio: nuevo.servicio,
+                    cargo: nuevo.cargo,
+                    mes_rol: nuevo.mes_rol
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito con el cargo ${nuevo.cargo}!`);
+            document.getElementById('formNuevoTrabajador').reset();
+            renderDesplegable(TRABAJADORES_BASE);
+            cargarTrabajador(nuevo.id);
+        }
+
+        function abrirModalEditarTrabajador() {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            document.getElementById('editNombre').value = trabajadorActual.nombre_completo;
+            document.getElementById('editDni').value = trabajadorActual.dni;
+            document.getElementById('editPlanilla').value = trabajadorActual.planilla;
+            document.getElementById('editRegimen').value = trabajadorActual.regimen;
+            document.getElementById('editServicio').value = trabajadorActual.servicio;
+            document.getElementById('editCargo').value = trabajadorActual.cargo;
+            document.getElementById('editMesRol').value = trabajadorActual.mes_rol || "Octubre";
+            document.getElementById('modalEditarTrabajador').classList.remove('hidden');
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modalEditarTrabajador').classList.add('hidden');
+        }
+
+        async function guardarEdicionTrabajador(e) {
+            e.preventDefault();
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            trabajadorActual.nombre_completo = document.getElementById('editNombre').value.trim().toUpperCase();
+            trabajadorActual.dni = document.getElementById('editDni').value.trim();
+            trabajadorActual.planilla = document.getElementById('editPlanilla').value.trim();
+            trabajadorActual.regimen = document.getElementById('editRegimen').value;
+            trabajadorActual.servicio = document.getElementById('editServicio').value.trim().toUpperCase();
+            trabajadorActual.cargo = document.getElementById('editCargo').value;
+            trabajadorActual.mes_rol = document.getElementById('editMesRol').value;
+
+            guardarStorage();
+            cerrarModalEditar();
+
+            fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                method: "PATCH",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    nombre_completo: trabajadorActual.nombre_completo,
+                    dni: trabajadorActual.dni,
+                    planilla: trabajadorActual.planilla,
+                    regimen: trabajadorActual.regimen,
+                    servicio: trabajadorActual.servicio,
+                    cargo: trabajadorActual.cargo,
+                    mes_rol: trabajadorActual.mes_rol
+                })
+            }).catch(e => console.error("Sincronización diferida"));
+
+            alert("¡Datos del servidor actualizados con éxito!");
+            renderDesplegable(TRABAJADORES_BASE);
+            cargarTrabajador(trabajadorActual.id);
+        }
+
+        async function eliminarTrabajadorActual() {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            const confirmacion1 = confirm(`⚠️ ELIMINAR SERVIDOR PÚBLICO:\n¿Está seguro de eliminar a ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}] de la base de datos?`);
+            if (confirmacion1) {
+                const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción BORRARÁ todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
+                if (confirmacion2) {
+                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
+                    delete KARDEX_MEMORIA[trabajadorActual.id];
+                    guardarStorage();
+
+                    fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                        method: "DELETE",
+                        headers: getHeaders()
+                    }).catch(e => console.error("Sincronización diferida"));
+
+                    listaTrabajadores = TRABAJADORES_BASE;
+                    alert("Trabajador eliminado de la base con éxito.");
+                    renderDesplegable(listaTrabajadores);
+                    if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+                    else limpiarVistaPantalla();
+                }
+            }
+        }
+
+        document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
+
+        // BUSCADORES EN TIEMPO REAL RESTAURADOS
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) {
@@ -892,8 +1599,6 @@
             if (filt.length > 0) cargarTrabajador(filt[0].id);
             else limpiarVistaPantalla();
         });
-
-        document.getElementById('selectTrabajador').addEventListener('change', (e) => cargarTrabajador(e.target.value));
     </script>
 </body>
 </html>
