@@ -6,6 +6,13 @@
     <title>Sistema de Gestión de Vacaciones - Hospital II Albrecht</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #areaImpresionReporte, #areaImpresionReporte * { visibility: visible; }
+            #areaImpresionReporte { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800">
 
@@ -187,7 +194,7 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO AGREGAR PERSONAL CON DESPLEGABLE NORMATIVO DE CARGOS -->
+                <!-- MÓDULO AGREGAR PERSONAL (SOLO RRHH) -->
                 <div id="moduloRegistrarPersonal" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-user-plus text-emerald-600"></i>
@@ -278,23 +285,46 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
-                <!-- INDICADORES PRINCIPALES -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
-                        <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">0 Días</p>
+                <!-- INDICADORES PRINCIPALES Y MÓDULO COMPLETO DE REPORTES -->
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                            <p class="text-xs text-slate-500">Saldo Periodo 2026</p>
+                            <p id="lblSaldo2026" class="text-xl font-bold text-blue-700">0 Días</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                            <p class="text-xs text-slate-500">Deuda Años Anteriores</p>
+                            <p id="lblDeudaAnteriores" class="text-xl font-bold text-red-600">0 Días</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                            <p class="text-xs text-slate-500">Total Días Pendientes</p>
+                            <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">0 Días</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                            <p class="text-xs text-slate-500">Adelanto 2027</p>
+                            <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">0 Días</p>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <p class="text-xs text-slate-500">Deuda Años Anteriores</p>
-                        <p id="lblDeudaAnteriores" class="text-xl font-bold text-red-600">0 Días</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <p class="text-xs text-slate-500">Total Días Pendientes</p>
-                        <p id="lblTotalPendientes" class="text-xl font-bold text-emerald-600">0 Días</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <p class="text-xs text-slate-500">Adelanto 2027</p>
-                        <p id="lblAdelanto2027" class="text-xl font-bold text-purple-700">0 Días</p>
+
+                    <!-- BOTONES DE GENERACIÓN DE REPORTES -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-2 text-xs">
+                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf text-red-600"></i> Generador de Reportes Institucionales:
+                        </span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="generarReporte('PENDIENTES')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2.5 py-1.5 rounded shadow flex items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Pendientes por Gozar
+                            </button>
+                            <button onclick="generarReporte('SIN_REGISTRO')" class="bg-red-700 hover:bg-red-800 text-white font-bold px-2.5 py-1.5 rounded shadow flex items-center gap-1">
+                                <i class="fa-solid fa-calendar-xmark"></i> Sin Ninguna Fecha
+                            </button>
+                            <button onclick="generarReporte('COMPLETADOS')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded shadow flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> Vacaciones Completadas
+                            </button>
+                            <button onclick="generarReporte('TODOS')" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-2.5 py-1.5 rounded shadow flex items-center gap-1">
+                                <i class="fa-solid fa-list-ol"></i> Consolidado General
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -396,7 +426,55 @@
         </main>
     </div>
 
-    <!-- MODAL EDITAR SERVIDOR CON DESPLEGABLE NORMATIVO -->
+    <!-- MODAL VISTA PREVIA E IMPRESIÓN DE REPORTES -->
+    <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-4xl w-full space-y-4 text-xs max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-blue-700"></i> Reporte Institucional de Vacaciones - Hospital II Albrecht
+                </h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div id="areaImpresionReporte" class="overflow-y-auto p-4 space-y-4 border rounded-lg bg-slate-50 flex-1">
+                <div class="text-center border-b pb-3">
+                    <h2 class="text-lg font-bold text-blue-900 uppercase">EsSalud - Red Asistencial La Libertad</h2>
+                    <p class="text-xs font-semibold text-slate-700">HOSPITAL II ALBRECHT | REPORTE DE AUDITORÍA VACACIONAL</p>
+                    <p id="lblTituloReporteModal" class="text-xs font-bold text-amber-700 uppercase mt-1">-</p>
+                </div>
+
+                <table class="w-full text-[11px] text-left border-collapse bg-white shadow-sm">
+                    <thead>
+                        <tr class="bg-slate-800 text-white">
+                            <th class="p-2 border">N°</th>
+                            <th class="p-2 border">Apellidos y Nombres</th>
+                            <th class="p-2 border">DNI / Planilla</th>
+                            <th class="p-2 border">Cargo / Servicio</th>
+                            <th class="p-2 border text-center">Días Computados</th>
+                            <th class="p-2 border text-center">Saldo Pendiente</th>
+                            <th class="p-2 border text-center">Estado Auditoría</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyReporteModal">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t">
+                <span class="text-slate-500 font-semibold">Hospital II Albrecht - Sistema de Vacaciones Nube</span>
+                <div class="flex gap-2">
+                    <button type="button" onclick="imprimirReporte()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> Imprimir / Guardar en PDF
+                    </button>
+                    <button type="button" onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded shadow">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR SERVIDOR -->
     <div id="modalEditarTrabajador" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
             <div class="flex justify-between items-center border-b pb-2">
@@ -683,7 +761,74 @@
             `;
         }
 
-        // FILTRO COMBINADO FLEXIBLE POR CARGO Y MES REAL
+        // GENERADOR DE REPORTES DE AUDITORÍA (INCLUYE SIN REGISTRO)
+        function generarReporte(tipo) {
+            const tbody = document.getElementById('tbodyReporteModal');
+            tbody.innerHTML = "";
+
+            let titulo = "CONSOLIDADO GENERAL DE PLANTILLA VACACIONAL";
+            if (tipo === "PENDIENTES") titulo = "PERSONAL CON DÍAS PENDIENTES DE GOCE EN EL PERIODO 2026";
+            if (tipo === "SIN_REGISTRO") titulo = "PERSONAL QUE AÚN NO REGISTRA NINGUNA FECHA DE VACACIONES (0 DÍAS COMPUTADOS)";
+            if (tipo === "COMPLETADOS") titulo = "PERSONAL CON VACACIONES COMPLETADAS (30 DÍAS GOZADOS/PROGRAMADOS)";
+
+            document.getElementById('lblTituloReporteModal').innerText = titulo;
+
+            let contador = 0;
+
+            TRABAJADORES_BASE.forEach(t => {
+                const kardex = KARDEX_MEMORIA[t.id] || [];
+                const reg2026 = kardex.find(k => k.periodo_ano === 2026) || { dias_pendientes: 30, detalle_fechas: "" };
+                
+                const diasComputados = 30 - reg2026.dias_pendientes;
+                const saldoPendiente = reg2026.dias_pendientes;
+
+                let coincideFiltro = false;
+                if (tipo === "TODOS") coincideFiltro = true;
+                if (tipo === "PENDIENTES" && saldoPendiente > 0) coincideFiltro = true;
+                if (tipo === "SIN_REGISTRO" && diasComputados === 0) coincideFiltro = true;
+                if (tipo === "COMPLETADOS" && saldoPendiente === 0) coincideFiltro = true;
+
+                if (coincideFiltro) {
+                    contador++;
+                    let estadoTexto = "";
+                    if (saldoPendiente === 0) {
+                        estadoTexto = `<span class="font-bold text-emerald-700">✓ 30 Días Cumplidos</span>`;
+                    } else if (diasComputados === 0) {
+                        estadoTexto = `<span class="font-bold text-red-700">🚨 Sin Fechas Programadas</span>`;
+                    } else {
+                        estadoTexto = `<span class="font-bold text-amber-700">⚠️ Restan ${saldoPendiente} Días</span>`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b hover:bg-slate-100";
+                    tr.innerHTML = `
+                        <td class="p-2 border text-center font-bold">${contador}</td>
+                        <td class="p-2 border font-bold text-slate-800">${t.nombre_completo}</td>
+                        <td class="p-2 border font-mono">${t.dni || '-'} / ${t.planilla || '-'}</td>
+                        <td class="p-2 border">${t.cargo} - ${t.servicio}</td>
+                        <td class="p-2 border text-center font-bold text-blue-800">${diasComputados} Días</td>
+                        <td class="p-2 border text-center font-bold ${saldoPendiente > 0 ? 'text-emerald-700' : 'text-slate-400'}">${saldoPendiente} Días</td>
+                        <td class="p-2 border text-center">${estadoTexto}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (contador === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">No se encontraron trabajadores para esta categoría de reporte.</td></tr>`;
+            }
+
+            document.getElementById('modalReporte').classList.remove('hidden');
+        }
+
+        function cerrarModalReporte() {
+            document.getElementById('modalReporte').classList.add('hidden');
+        }
+
+        function imprimirReporte() {
+            window.print();
+        }
+
         function aplicarFiltrosAvanzados() {
             const cargoSel = document.getElementById('selectFiltroCargo').value;
             const mesNum = document.getElementById('selectFiltroMesReal').value;
@@ -691,7 +836,6 @@
             listaTrabajadores = TRABAJADORES_BASE.filter(t => {
                 const cargoStr = (t.cargo || "").trim().toUpperCase();
 
-                // COINCIDENCIA POR CARGO
                 let cumpleCargo = true;
                 if (cargoSel !== "TODOS") {
                     if (cargoSel === "EXACT_MEDICO") {
@@ -703,7 +847,6 @@
                     }
                 }
 
-                // COINCIDENCIA POR MES SALIDA REAL (CONVENIOS)
                 let cumpleMes = true;
                 if (mesNum !== "TODOS") {
                     cumpleMes = false;
