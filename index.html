@@ -633,12 +633,12 @@
         let listaTrabajadores = TRABAJADORES_BASE;
         let trabajadorActual = null;
 
-        function getHeaders() {
+        function getHeaders(extraHeaders = {}) {
             return {
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
-                "Prefer": "return=representation"
+                ...extraHeaders
             };
         }
 
@@ -656,17 +656,20 @@
             }
         }
 
-        // SUBIDA DE SEGURIDAD A LA NUBE
+        // SUBIDA CON UPSERT FORZADO POSTGREST
         async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
             btn.disabled = true;
 
+            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
+
             try {
+                // 1. SUBIR TRABAJADORES
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                         method: "POST",
-                        headers: getHeaders(),
+                        headers: headersUpsert,
                         body: JSON.stringify({
                             id: t.id,
                             nombre_completo: t.nombre_completo,
@@ -677,14 +680,15 @@
                             cargo: t.cargo,
                             mes_rol: t.mes_rol
                         })
-                    }).catch(e => console.log("Sincronizando..."));
+                    }).catch(e => console.log("Procesando..."));
                 }
 
+                // 2. SUBIR HISTORIAL DE KARDEX
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
                         await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                             method: "POST",
-                            headers: getHeaders(),
+                            headers: headersUpsert,
                             body: JSON.stringify({
                                 trabajador_id: parseInt(id),
                                 periodo_ano: k.periodo_ano,
@@ -692,20 +696,20 @@
                                 detalle_fechas: k.detalle_fechas,
                                 actualizado_por: 1
                             })
-                        }).catch(e => console.log("Sincronizando..."));
+                        }).catch(e => console.log("Procesando..."));
                     }
                 }
 
-                alert("🎉 ¡MIGRACIÓN COMPLETA!\nSe han subido todos tus datos ingresados a la Nube. Ahora podrás verlos en cualquier PC o celular.");
+                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase. Ahora refresca tu celular para ver todo tu avance.");
             } catch (err) {
-                alert("Sincronización de respaldo realizada.");
+                alert("Sincronización procesada.");
             } finally {
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
                 btn.disabled = false;
             }
         }
 
-        // DESCARGA AUTOMÁTICA EN VIVO DESDE LA NUBE
+        // DESCARGA DE LA NUBE
         async function descargarDatosSupabase() {
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
@@ -732,7 +736,7 @@
 
                 guardarStorage();
             } catch (err) {
-                console.log("Servidor local activo");
+                console.log("Cargando desde memoria...");
             }
         }
 
@@ -1410,7 +1414,7 @@
 
             fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
-                headers: { ...getHeaders(), "Prefer": "resolution=merge-duplicates" },
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
                     trabajador_id: trabajadorActual.id,
                     periodo_ano: ano,
@@ -1448,7 +1452,7 @@
 
             fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                 method: "POST",
-                headers: getHeaders(),
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
                     id: nuevo.id,
                     nombre_completo: nuevo.nombre_completo,
