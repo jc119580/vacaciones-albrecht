@@ -67,12 +67,12 @@
                     <i class="fa-solid text-2xl fa-hospital-user"></i>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">EsSalud - Red Asistencial La Libertad</h1>
-                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones (Nube ☁️)</p>
+                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube (En Línea ☁️)</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
-                    <button id="btnMigrarNubeHeader" onclick="sincronizarForzadoASupabase()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Guardar Todo en la Nube
+                    <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube
                     </button>
                     <div class="text-right">
                         <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
@@ -95,7 +95,7 @@
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscador por Cargo y Mes
                         </p>
-                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Cargando...</span>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Sincronizando...</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -394,7 +394,7 @@
 
                         <div class="text-right">
                             <button type="submit" id="btnGuardarTramo" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded shadow text-xs transition-colors">
-                                <i class="fa-solid fa-plus-circle"></i> + Agregar Tramo y Guardar
+                                <i class="fa-solid fa-plus-circle"></i> + Agregar Tramo y Acumular Vacaciones
                             </button>
                         </div>
                     </form>
@@ -422,7 +422,7 @@
         </main>
     </div>
 
-    <!-- SCRIPT COMPLETO CON CONEXIÓN EN TIEMPO REAL Y BUSCADORES RESTAURADOS -->
+    <!-- SCRIPT DE CONEXIÓN RESTAURADO CON VALIDACIONES Y CONTROL EN TIEMPO REAL -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -509,7 +509,7 @@
             }
         }
 
-        async function sincronizarForzadoASupabase() {
+        async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
             btn.disabled = true;
@@ -554,7 +554,7 @@
             } catch (err) {
                 alert("Guardado procesado.");
             } finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Guardar Todo en la Nube`;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
                 btn.disabled = false;
             }
         }
@@ -854,7 +854,6 @@
             else limpiarVistaPantalla();
         }
 
-        // EVENTOS DE BÚSQUEDA RESTAURADOS (DNI, PLANILLA, NOMBRE)
         document.getElementById('txtBuscarDNI').addEventListener('input', function(e) {
             const dni = e.target.value.trim();
             if (!dni) {
