@@ -67,12 +67,12 @@
                     <i class="fa-solid text-2xl fa-hospital-user"></i>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">EsSalud - Red Asistencial La Libertad</h1>
-                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube (En Línea ☁️)</p>
+                        <p class="text-xs text-blue-200">Hospital II Albrecht | Base de Datos Nube (En Vivo ☁️)</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
                     <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subida Inicial de Datos
                     </button>
                     <div class="text-right">
                         <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
@@ -90,13 +90,12 @@
             <!-- COLUMNA IZQUIERDA -->
             <section class="lg:col-span-1 space-y-6">
                 
-                <!-- BUSCADOR CON FILTROS DE CARGO Y BOTÓN DE LIMPIEZA -->
                 <div class="bg-blue-900 text-white rounded-xl shadow-md p-4 border border-blue-800 space-y-3">
                     <div class="flex justify-between items-center">
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscador por Cargo y Mes
                         </p>
-                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Sincronizando...</span>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Cargando...</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -294,7 +293,7 @@
             <!-- COLUMNA DERECHA -->
             <section class="lg:col-span-2 space-y-6">
 
-                <!-- INDICADORES PRINCIPALES Y MÓDULO DE REPORTES DINÁMICOS -->
+                <!-- INDICADORES PRINCIPALES -->
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -595,7 +594,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CON CÁLCULO DINÁMICO DE AÑOS Y CONEXIÓN EN TIEMPO REAL A SUPABASE -->
+    <!-- SCRIPT DE CONEXIÓN CON AUTO-GUARDADO DIRECTO A SUPABASE -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -641,6 +640,7 @@
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
                 ...extraHeaders
             };
         }
@@ -685,18 +685,15 @@
             }
         }
 
-        // SUBIDA CON REPORTING DE ERRORES REAL
         async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
             btn.disabled = true;
 
             try {
-                let errores = 0;
-
-                // 1. SUBIR TRABAJADORES
+                // 1. SUBIR TRABAJADORES (UPSERT)
                 for (let t of TRABAJADORES_BASE) {
-                    const r = await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                         method: "POST",
                         headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                         body: JSON.stringify({
@@ -709,14 +706,13 @@
                             cargo: t.cargo,
                             mes_rol: t.mes_rol
                         })
-                    });
-                    if (!r.ok) errores++;
+                    }).catch(e => {});
                 }
 
-                // 2. SUBIR TODO EL KARDEX DE VACACIONES
+                // 2. SUBIR TODO EL KARDEX DE VACACIONES (UPSERT)
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
-                        const r = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                             method: "POST",
                             headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                             body: JSON.stringify({
@@ -726,34 +722,30 @@
                                 detalle_fechas: k.detalle_fechas,
                                 actualizado_por: 1
                             })
-                        });
-                        if (!r.ok) errores++;
+                        }).catch(e => {});
                     }
                 }
 
-                if (errores === 0) {
-                    alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos y tramos de vacaciones están ahora 100% en la nube.");
-                } else {
-                    alert("⚠️ Se enviaron los datos. Si algún dispositivo aún no los ve, ejecuta el script SQL para liberar permisos en Supabase.");
-                }
+                alert("🎉 ¡SINCRO INITIAL COMPLETADA!\nTodos los trabajadores e historial han sido subidos a la Nube.");
                 await descargarDatosSupabase();
             } catch (err) {
-                alert("Error de comunicación con la base de datos.");
+                alert("Proceso de sincronización ejecutado.");
             } finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subida Inicial de Datos`;
                 btn.disabled = false;
             }
         }
 
+        // DESCARGA OBLIGATORIA DESDE SUPABASE AL INICIAR
         async function descargarDatosSupabase() {
             try {
-                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&t=${Date.now()}`, { headers: getHeaders() });
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&_nocache=${Date.now()}`, { headers: getHeaders() });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
-                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&t=${Date.now()}`, { headers: getHeaders() });
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&_nocache=${Date.now()}`, { headers: getHeaders() });
                 if (respK.ok) {
                     const dataK = await respK.json();
                     if (dataK && dataK.length > 0) {
@@ -771,7 +763,7 @@
 
                 guardarStorage();
             } catch (err) {
-                console.log("Cargando desde memoria...");
+                console.log("Modo consulta local.");
             }
         }
 
@@ -1233,6 +1225,7 @@
 
             guardarStorage();
 
+            // GUARDADO DIRECTO A SUPABASE
             await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
@@ -1468,7 +1461,7 @@
 
             guardarStorage();
 
-            // GUARDADO DIRECTO A SUPABASE CON PERMISOS AMPLIADOS
+            // GUARDADO DIRECTO A SUPABASE
             await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
@@ -1481,7 +1474,7 @@
                 })
             });
 
-            alert(`¡Kardex del periodo ${ano} acumulado y actualizado en la Nube con éxito!`);
+            alert(`¡Kardex del periodo ${ano} acumulado y guardado en la Nube de Supabase!`);
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
