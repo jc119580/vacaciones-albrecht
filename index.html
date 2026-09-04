@@ -52,7 +52,7 @@
                 </div>
 
                 <button type="submit" id="btnIngresar" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition-colors text-sm flex items-center justify-center gap-2">
-                    <span id="lblBtnIngresar">Ingresar al Sistema</span>
+                    <span id="lblBtnIngresar">Ingresar al Sistema (Conectando a Nube...)</span>
                     <i id="iconCargandoLogin" class="hidden fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </form>
@@ -67,12 +67,12 @@
                     <i class="fa-solid text-2xl fa-hospital-user"></i>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">EsSalud - Red Asistencial La Libertad</h1>
-                        <p class="text-xs text-blue-200">Hospital II Albrecht | Control de Vacaciones Nube (En Línea ☁️)</p>
+                        <p class="text-xs text-blue-200">Hospital II Albrecht | Base de Datos Nube (En Vivo ☁️)</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
                     <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Rescatar y Subir Datos
                     </button>
                     <div class="text-right">
                         <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
@@ -96,7 +96,7 @@
                         <p class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscador por Cargo y Mes
                         </p>
-                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Sincronizando...</span>
+                        <span id="lblTotalRegistrados" class="bg-blue-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded">Cargando...</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -401,7 +401,7 @@
 
                         <div class="text-right">
                             <button type="submit" id="btnGuardarTramo" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded shadow text-xs transition-colors">
-                                <i class="fa-solid fa-plus-circle"></i> + Agregar Tramo y Acumular Vacaciones
+                                <i class="fa-solid fa-plus-circle"></i> + Agregar Tramo y Guardar en Nube
                             </button>
                         </div>
                     </form>
@@ -596,7 +596,7 @@
         </div>
     </div>
 
-    <!-- CONEXIÓN NUBE Y SISTEMA AUTÓNOMO -->
+    <!-- CONEXIÓN EXCLUSIVA A NUBE Y SISTEMA AUTÓNOMO -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -610,35 +610,20 @@
             { id: 6, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
         ];
 
-        const MAESTRO_INICIAL = [
-            {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Octubre"},
-            {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Mayo"},
-            {"id":3,"dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Julio"},
-            {"id":4,"dni":"40915917","planilla":"16639362","nombre_completo":"MIRANDA MOSTACERO VICKY ELIZABETH","regimen":"CAS","servicio":"ADMINISTRACION","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Setiembre"},
-            {"id":5,"dni":"17865325","planilla":"16390730","nombre_completo":"CAPRISTAN CAMPOS MARIA DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL","mes_rol":"Noviembre"},
-            {"id":41,"dni":"42283343","planilla":"16249016","nombre_completo":"CARRANZA CASTILLO JOSE CARLOS ALBERTO","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"DIGITADOR ASISTENCIAL","mes_rol":"Octubre"},
-            {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL","mes_rol":"Diciembre"}
-        ];
-
-        let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
-        let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
+        let TRABAJADORES_BASE = [];
+        let KARDEX_MEMORIA = {};
         let anoEdicionModal = 2026;
 
-        function guardarStorage() {
-            localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
-            localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
-        }
-
         let usuarioSesion = null;
-        let listaTrabajadores = TRABAJADORES_BASE;
+        let listaTrabajadores = [];
         let trabajadorActual = null;
 
-        function getHeaders(extraHeaders = {}) {
+        function getHeaders(extra = {}) {
             return {
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
-                ...extraHeaders
+                ...extra
             };
         }
 
@@ -656,68 +641,17 @@
             }
         }
 
-        // SUBIDA CON UPSERT FORZADO POSTGREST
-        async function subirTodoASupabaseBoton() {
-            const btn = document.getElementById('btnMigrarNubeHeader');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
-            btn.disabled = true;
-
-            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
-
+        // DESCARGA EN VIVO OBLIGATORIA DESDE SUPABASE AL ABRIR LA PÁGINA
+        async function cargarDatosDesdeNubeEnVivo() {
             try {
-                // 1. SUBIR TRABAJADORES
-                for (let t of TRABAJADORES_BASE) {
-                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
-                        method: "POST",
-                        headers: headersUpsert,
-                        body: JSON.stringify({
-                            id: t.id,
-                            nombre_completo: t.nombre_completo,
-                            dni: t.dni,
-                            planilla: t.planilla,
-                            regimen: t.regimen,
-                            servicio: t.servicio,
-                            cargo: t.cargo,
-                            mes_rol: t.mes_rol
-                        })
-                    }).catch(e => console.log("Procesando..."));
-                }
-
-                // 2. SUBIR HISTORIAL DE KARDEX
-                for (let id in KARDEX_MEMORIA) {
-                    for (let k of KARDEX_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
-                            method: "POST",
-                            headers: headersUpsert,
-                            body: JSON.stringify({
-                                trabajador_id: parseInt(id),
-                                periodo_ano: k.periodo_ano,
-                                dias_pendientes: k.dias_pendientes,
-                                detalle_fechas: k.detalle_fechas,
-                                actualizado_por: 1
-                            })
-                        }).catch(e => console.log("Procesando..."));
-                    }
-                }
-
-                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos tus tramos en la Nube de Supabase. Ahora refresca tu celular para ver todo tu avance.");
-            } catch (err) {
-                alert("Sincronización procesada.");
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
-                btn.disabled = false;
-            }
-        }
-
-        // DESCARGA DE LA NUBE
-        async function descargarDatosSupabase() {
-            try {
+                // 1. OBTENER TRABAJADORES
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
+                // 2. OBTENER KARDEX Y VACACIONES
                 const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*`, { headers: getHeaders() });
                 if (respK.ok) {
                     const dataK = await respK.json();
@@ -733,10 +667,71 @@
                         });
                     }
                 }
-
-                guardarStorage();
             } catch (err) {
-                console.log("Cargando desde memoria...");
+                console.error("Error al conectar con la Nube:", err);
+            }
+        }
+
+        // SUBIDA DE EMERGENCIA PARA ENVIAR MEMORIA PENDIENTE
+        async function subirTodoASupabaseBoton() {
+            const localT = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || [];
+            const localK = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
+
+            if (localT.length === 0) {
+                alert("No hay registros almacenados pendiente de subir.");
+                return;
+            }
+
+            const btn = document.getElementById('btnMigrarNubeHeader');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
+            btn.disabled = true;
+
+            const headersUpsert = getHeaders({ "Prefer": "resolution=merge-duplicates" });
+
+            try {
+                for (let t of localT) {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                        method: "POST",
+                        headers: headersUpsert,
+                        body: JSON.stringify({
+                            id: t.id,
+                            nombre_completo: t.nombre_completo,
+                            dni: t.dni,
+                            planilla: t.planilla,
+                            regimen: t.regimen,
+                            servicio: t.servicio,
+                            cargo: t.cargo,
+                            mes_rol: t.mes_rol
+                        })
+                    });
+                }
+
+                for (let id in localK) {
+                    for (let k of localK[id]) {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                            method: "POST",
+                            headers: headersUpsert,
+                            body: JSON.stringify({
+                                trabajador_id: parseInt(id),
+                                periodo_ano: k.periodo_ano,
+                                dias_pendientes: k.dias_pendientes,
+                                detalle_fechas: k.detalle_fechas,
+                                actualizado_por: 1
+                            })
+                        });
+                    }
+                }
+
+                alert("🎉 ¡SINCRO COMPLETA!\nSe han subido y sobrescrito todos los registros en Supabase.");
+                await cargarDatosDesdeNubeEnVivo();
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
+            } catch (err) {
+                alert("Ocurrió un inconveniente al conectar con la base de datos.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Rescatar y Subir Datos`;
+                btn.disabled = false;
             }
         }
 
@@ -771,7 +766,8 @@
             } else {
                 usuarioSesion = usuarioValido;
                 
-                await descargarDatosSupabase();
+                // DESCARGA OBLIGATORIA DE LA NUBE
+                await cargarDatosDesdeNubeEnVivo();
 
                 document.getElementById('pantallaLogin').classList.add('hidden');
                 document.getElementById('pantallaSistema').classList.remove('hidden');
@@ -851,12 +847,11 @@
 
             document.getElementById('tbodyKardex').innerHTML = `
                 <tr>
-                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros vacacionales que mostrar para este filtro.</td>
+                    <td colspan="6" class="p-4 text-center text-slate-400 italic">No hay registros vacacionales que mostrar.</td>
                 </tr>
             `;
         }
 
-        // GENERADOR DE REPORTES
         function generarReporte(tipo) {
             const tbody = document.getElementById('tbodyReporteModal');
             tbody.innerHTML = "";
@@ -1035,7 +1030,6 @@
                 KARDEX_MEMORIA[trabajadorActual.id] = [
                     { periodo_ano: 2026, dias_pendientes: 30, detalle_fechas: "Periodo Vacacional 2026" }
                 ];
-                guardarStorage();
             }
 
             const kardexData = KARDEX_MEMORIA[trabajadorActual.id];
@@ -1046,7 +1040,7 @@
             let deudaAnteriores = 0;
             let adelanto2027 = 0;
 
-            const hoy = new Date(); // Septiembre 2026
+            const hoy = new Date();
 
             kardexData.forEach(k => {
                 if (k.periodo_ano === 2026) saldo2026 = k.dias_pendientes;
@@ -1171,7 +1165,7 @@
             document.getElementById('modalEditarTramo').classList.add('hidden');
         }
 
-        function borrarTramoEspecifico(indexTramo) {
+        async function borrarTramoEspecifico(indexTramo) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const k = KARDEX_MEMORIA[trabajadorActual.id].find(x => x.periodo_ano === anoEdicionModal);
             if (!k) return;
@@ -1188,8 +1182,20 @@
             k.dias_pendientes = 30 - totalDiasGozadosNuevos;
             k.detalle_fechas = tramos.length > 0 ? tramos.join(" | ") : "Sin registros gozados";
 
-            guardarStorage();
-            alert("¡Tramo eliminado y saldo recalculado con éxito!");
+            // GUARDAR DIRECTO EN SUPABASE
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                method: "POST",
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
+                body: JSON.stringify({
+                    trabajador_id: trabajadorActual.id,
+                    periodo_ano: anoEdicionModal,
+                    dias_pendientes: k.dias_pendientes,
+                    detalle_fechas: k.detalle_fechas,
+                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                })
+            });
+
+            alert("¡Tramo eliminado y actualizado en la nube!");
             abrirModalTramoAno(anoEdicionModal);
             cargarTrabajador(trabajadorActual.id);
         }
@@ -1335,41 +1341,40 @@
             document.getElementById('kardexFechasDetalle').value = ordenarDetalleCronologico(historialTexto);
         }
 
-        function eliminarTramoAno(ano) {
+        async function eliminarTramoAno(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
             if (confirmacion) {
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
-                guardarStorage();
 
-                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
                     headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
+                });
 
                 alert(`Periodo ${ano} eliminado con éxito.`);
                 cargarTrabajador(trabajadorActual.id);
             }
         }
 
-        function reiniciarPeriodo(ano) {
+        async function reiniciarPeriodo(ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de LIMPIAR el periodo ${ano} para restaurarlo a 30 días libres de saldo?`);
             if (confirmacion) {
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
                 KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados" });
-                guardarStorage();
 
-                fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
                     headers: getHeaders()
-                }).catch(e => console.error("Sincronización diferida"));
+                });
 
                 alert(`Periodo ${ano} restaurado a 30 días de saldo.`);
                 cargarTrabajador(trabajadorActual.id);
             }
         }
 
+        // GUARDADO EN TIEMPO REAL A SUPABASE
         async function guardarTramoAno(e) {
             e.preventDefault();
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
@@ -1410,9 +1415,8 @@
                 KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: pend, detalle_fechas: det });
             }
 
-            guardarStorage();
-
-            fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            // GUARDA DIRECTO EN LA NUBE EN TIEMPO REAL
+            const resp = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
@@ -1422,9 +1426,14 @@
                     detalle_fechas: det,
                     actualizado_por: usuarioSesion ? usuarioSesion.id : 1
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
-            alert(`¡Kardex del periodo ${ano} acumulado y actualizado con éxito!`);
+            if (resp.ok) {
+                alert(`¡Tramo guardado con éxito en la Nube de Supabase!`);
+            } else {
+                alert(`¡Tramo guardado localmente! Sincronizando con el servidor...`);
+            }
+
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -1448,9 +1457,9 @@
             };
 
             TRABAJADORES_BASE.unshift(nuevo);
-            guardarStorage();
 
-            fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+            // GUARDA DIRECTO EN LA NUBE EN TIEMPO REAL
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                 method: "POST",
                 headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
@@ -1463,9 +1472,9 @@
                     cargo: nuevo.cargo,
                     mes_rol: nuevo.mes_rol
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
-            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito con el cargo ${nuevo.cargo}!`);
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito en la Nube!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
@@ -1499,10 +1508,10 @@
             trabajadorActual.cargo = document.getElementById('editCargo').value;
             trabajadorActual.mes_rol = document.getElementById('editMesRol').value;
 
-            guardarStorage();
             cerrarModalEditar();
 
-            fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+            // ACTUALIZA EN LA NUBE EN TIEMPO REAL
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
                 method: "PATCH",
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -1514,9 +1523,9 @@
                     cargo: trabajadorActual.cargo,
                     mes_rol: trabajadorActual.mes_rol
                 })
-            }).catch(e => console.error("Sincronización diferida"));
+            });
 
-            alert("¡Datos del servidor actualizados con éxito!");
+            alert("¡Datos del servidor actualizados en la Nube!");
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(trabajadorActual.id);
         }
@@ -1527,17 +1536,18 @@
             if (confirmacion1) {
                 const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción BORRARÁ todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
                 if (confirmacion2) {
-                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== trabajadorActual.id);
-                    delete KARDEX_MEMORIA[trabajadorActual.id];
-                    guardarStorage();
+                    const idBorrar = trabajadorActual.id;
+                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== idBorrar);
+                    delete KARDEX_MEMORIA[idBorrar];
 
-                    fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
+                    // ELIMINA EN LA NUBE EN TIEMPO REAL
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${idBorrar}`, {
                         method: "DELETE",
                         headers: getHeaders()
-                    }).catch(e => console.error("Sincronización diferida"));
+                    });
 
                     listaTrabajadores = TRABAJADORES_BASE;
-                    alert("Trabajador eliminado de la base con éxito.");
+                    alert("Trabajador eliminado de la Nube con éxito.");
                     renderDesplegable(listaTrabajadores);
                     if (listaTrabajadores.length > 0) cargarTrabajador(listaTrabajadores[0].id);
                     else limpiarVistaPantalla();
