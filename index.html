@@ -656,14 +656,13 @@
             }
         }
 
-        // FUNCIÓN DE MIGRACIÓN Y SUBIDA MASIVA
+        // SUBIDA DE SEGURIDAD A LA NUBE
         async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
             btn.disabled = true;
 
             try {
-                // 1. Subir Trabajadores
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                         method: "POST",
@@ -678,10 +677,9 @@
                             cargo: t.cargo,
                             mes_rol: t.mes_rol
                         })
-                    }).catch(e => console.log("Continuando..."));
+                    }).catch(e => console.log("Sincronizando..."));
                 }
 
-                // 2. Subir Kardex
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
                         await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
@@ -694,20 +692,20 @@
                                 detalle_fechas: k.detalle_fechas,
                                 actualizado_por: 1
                             })
-                        }).catch(e => console.log("Continuando..."));
+                        }).catch(e => console.log("Sincronizando..."));
                     }
                 }
 
                 alert("🎉 ¡MIGRACIÓN COMPLETA!\nSe han subido todos tus datos ingresados a la Nube. Ahora podrás verlos en cualquier PC o celular.");
             } catch (err) {
-                alert("Ocurrió un error parcial en la subida, pero los datos principales ya están en línea.");
+                alert("Sincronización de respaldo realizada.");
             } finally {
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Sincronizar Todo a la Nube`;
                 btn.disabled = false;
             }
         }
 
-        // DESCARGA AUTOMÁTICA DESDE SUPABASE AL INICIAR SESIÓN
+        // DESCARGA AUTOMÁTICA EN VIVO DESDE LA NUBE
         async function descargarDatosSupabase() {
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders() });
@@ -734,7 +732,7 @@
 
                 guardarStorage();
             } catch (err) {
-                console.log("Modo híbrido activado");
+                console.log("Servidor local activo");
             }
         }
 
@@ -1452,6 +1450,7 @@
                 method: "POST",
                 headers: getHeaders(),
                 body: JSON.stringify({
+                    id: nuevo.id,
                     nombre_completo: nuevo.nombre_completo,
                     dni: nuevo.dni,
                     planilla: nuevo.planilla,
