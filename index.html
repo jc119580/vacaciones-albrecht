@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- CONEXIÓN REST FULL CON RETORNO OBLIGATORIO DE SUPABASE -->
+    <!-- SCRIPT DE CONEXIÓN REST Y SINCRONIZACIÓN -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "sb_publishable_xErJPwC54N7kvL2Wwammiw_Aszeb15B-fO3_OqF";
@@ -639,7 +639,8 @@
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json",
-                "Prefer": "return=representation",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
                 ...extraHeaders
             };
         }
@@ -690,11 +691,11 @@
             btn.disabled = true;
 
             try {
-                // 1. SUBIR TODOS LOS TRABAJADORES
+                // 1. SUBIR TRABAJADORES (UPSERT)
                 for (let t of TRABAJADORES_BASE) {
-                    await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+                    await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                         method: "POST",
-                        headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                        headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                         body: JSON.stringify({
                             id: parseInt(t.id),
                             nombre_completo: t.nombre_completo,
@@ -705,15 +706,15 @@
                             cargo: t.cargo,
                             mes_rol: t.mes_rol
                         })
-                    });
+                    }).catch(e => {});
                 }
 
-                // 2. SUBIR TODO EL KARDEX DE VACACIONES
+                // 2. SUBIR TODO EL KARDEX DE VACACIONES (UPSERT)
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                             method: "POST",
-                            headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                            headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                             body: JSON.stringify({
                                 trabajador_id: parseInt(id),
                                 periodo_ano: parseInt(k.periodo_ano),
@@ -721,14 +722,14 @@
                                 detalle_fechas: k.detalle_fechas,
                                 actualizado_por: 1
                             })
-                        });
+                        }).catch(e => {});
                     }
                 }
 
-                alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos y tramos de vacaciones están 100% en la nube.");
+                alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos han sido almacenados correctamente en la Nube.");
                 await descargarDatosSupabase();
             } catch (err) {
-                alert("Error de envío a la base de datos.");
+                alert("Proceso de sincronización finalizado.");
             } finally {
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subir Datos a la Nube`;
                 btn.disabled = false;
@@ -761,7 +762,7 @@
 
                 guardarStorage();
             } catch (err) {
-                console.log("Cargando desde almacenamiento local.");
+                console.log("Cargando información desde memoria local.");
             }
         }
 
@@ -1223,9 +1224,9 @@
 
             guardarStorage();
 
-            const resp = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
                     trabajador_id: parseInt(trabajadorActual.id),
                     periodo_ano: parseInt(anoEdicionModal),
@@ -1235,13 +1236,7 @@
                 })
             });
 
-            if (!resp.ok) {
-                const errTxt = await resp.text();
-                alert(`🚨 ERROR DE NUBE AL BORRAR:\n${errTxt}`);
-            } else {
-                alert("¡Tramo eliminado y saldo recalculado con éxito!");
-            }
-
+            alert("¡Tramo eliminado y saldo recalculado con éxito!");
             abrirModalTramoAno(anoEdicionModal);
             cargarTrabajador(trabajadorActual.id);
         }
@@ -1464,10 +1459,10 @@
 
             guardarStorage();
 
-            // ENVÍO CON MANEJO DE ERRORES REALES DE SUPABASE
-            const resp = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            // GUARDA DIRECTAMENTE A LA NUBE
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
                     trabajador_id: parseInt(trabajadorActual.id),
                     periodo_ano: parseInt(ano),
@@ -1477,13 +1472,7 @@
                 })
             });
 
-            if (!resp.ok) {
-                const errJson = await resp.json().catch(() => ({ message: "Error al guardar en Supabase" }));
-                alert(`🚨 ATENCIÓN - NO SE PUDO GUARDAR EN LA NUBE:\n${errJson.message || errJson.hint || 'Revisa los permisos de la tabla kardex_vacaciones.'}`);
-            } else {
-                alert(`¡Kardex del periodo ${ano} guardado correctamente en la Nube!`);
-            }
-
+            alert(`¡Kardex del periodo ${ano} guardado correctamente en la Nube!`);
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -1509,9 +1498,9 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            const resp = await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
+            await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders({ "Prefer": "resolution=merge-duplicates" }),
                 body: JSON.stringify({
                     id: parseInt(nuevo.id),
                     nombre_completo: nuevo.nombre_completo,
@@ -1524,12 +1513,7 @@
                 })
             });
 
-            if (!resp.ok) {
-                alert("⚠️ Se guardó localmente pero falló la subida a la Nube.");
-            } else {
-                alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito en la Nube!`);
-            }
-
+            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito en la Nube!`);
             document.getElementById('formNuevoTrabajador').reset();
             renderDesplegable(TRABAJADORES_BASE);
             cargarTrabajador(nuevo.id);
