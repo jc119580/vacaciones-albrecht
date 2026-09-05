@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN REST Y SINCRONIZACIÓN NUBE CON CLAVE SERVICE_ROLE -->
+    <!-- CONEXIÓN COMPATIBLE SUPABASE REST -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -634,15 +634,16 @@
         let listaTrabajadores = TRABAJADORES_BASE;
         let trabajadorActual = null;
 
-        function getHeaders(extraHeaders = {}) {
-            return {
+        function getHeaders(esEscritura = false) {
+            const headers = {
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                ...extraHeaders
+                "Content-Type": "application/json"
             };
+            if (esEscritura) {
+                headers["Prefer"] = "resolution=merge-duplicates";
+            }
+            return headers;
         }
 
         function inicializarAnosDinamicos() {
@@ -691,11 +692,11 @@
             btn.disabled = true;
 
             try {
-                // 1. SUBIR TRABAJADORES CON REGLA MERGE DUPLICADOS
+                // 1. SUBIR TRABAJADORES
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                         method: "POST",
-                        headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                        headers: getHeaders(true),
                         body: JSON.stringify({
                             id: parseInt(t.id),
                             nombre_completo: t.nombre_completo,
@@ -709,12 +710,12 @@
                     }).catch(e => {});
                 }
 
-                // 2. SUBIR TODO EL KARDEX DE VACACIONES
+                // 2. SUBIR KARDEX
                 for (let id in KARDEX_MEMORIA) {
                     for (let k of KARDEX_MEMORIA[id]) {
                         await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                             method: "POST",
-                            headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                            headers: getHeaders(true),
                             body: JSON.stringify({
                                 trabajador_id: parseInt(id),
                                 periodo_ano: parseInt(k.periodo_ano),
@@ -738,13 +739,13 @@
 
         async function descargarDatosSupabase() {
             try {
-                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&_nocache=${Date.now()}`, { headers: getHeaders() });
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&_nocache=${Date.now()}`, { headers: getHeaders(false) });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
-                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&_nocache=${Date.now()}`, { headers: getHeaders() });
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&_nocache=${Date.now()}`, { headers: getHeaders(false) });
                 if (respK.ok) {
                     const dataK = await respK.json();
                     if (dataK && dataK.length > 0) {
@@ -778,7 +779,7 @@
 
             try {
                 const resp = await fetch(`${SUPABASE_BASE_URL}/usuarios?username=eq.${usr}&password_hash=eq.${pwd}`, {
-                    headers: getHeaders()
+                    headers: getHeaders(false)
                 });
                 if (resp.ok) {
                     const data = await resp.json();
@@ -1226,7 +1227,7 @@
 
             await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders(true),
                 body: JSON.stringify({
                     trabajador_id: parseInt(trabajadorActual.id),
                     periodo_ano: parseInt(anoEdicionModal),
@@ -1391,7 +1392,7 @@
 
                 await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
-                    headers: getHeaders()
+                    headers: getHeaders(false)
                 });
 
                 alert(`Periodo ${ano} eliminado con éxito.`);
@@ -1409,7 +1410,7 @@
 
                 await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     method: "DELETE",
-                    headers: getHeaders()
+                    headers: getHeaders(false)
                 });
 
                 alert(`Periodo ${ano} restaurado a 30 días de saldo.`);
@@ -1459,10 +1460,9 @@
 
             guardarStorage();
 
-            // SINCRO DIRECTA EN LA NUBE CON RETORNO DE CONFIRMACIÓN
             await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders(true),
                 body: JSON.stringify({
                     trabajador_id: parseInt(trabajadorActual.id),
                     periodo_ano: parseInt(ano),
@@ -1500,7 +1500,7 @@
 
             await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                 method: "POST",
-                headers: getHeaders({ "Prefer": "resolution=merge-duplicates,return=representation" }),
+                headers: getHeaders(true),
                 body: JSON.stringify({
                     id: parseInt(nuevo.id),
                     nombre_completo: nuevo.nombre_completo,
@@ -1552,7 +1552,7 @@
 
             await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${trabajadorActual.id}`, {
                 method: "PATCH",
-                headers: getHeaders(),
+                headers: getHeaders(false),
                 body: JSON.stringify({
                     nombre_completo: trabajadorActual.nombre_completo,
                     dni: trabajadorActual.dni,
@@ -1582,7 +1582,7 @@
 
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${idBorrar}`, {
                         method: "DELETE",
-                        headers: getHeaders()
+                        headers: getHeaders(false)
                     });
 
                     listaTrabajadores = TRABAJADORES_BASE;
