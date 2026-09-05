@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- CONEXIÓN COMPATIBLE SUPABASE REST -->
+    <!-- SCRIPT DE CONEXIÓN CON TIPOS STRING DEPURADOS -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -612,13 +612,13 @@
         ];
 
         const MAESTRO_INICIAL = [
-            {"id":1,"dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Octubre"},
-            {"id":2,"dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Mayo"},
-            {"id":3,"dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Julio"},
-            {"id":4,"dni":"40915917","planilla":"16639362","nombre_completo":"MIRANDA MOSTACERO VICKY ELIZABETH","regimen":"CAS","servicio":"ADMINISTRACION","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Setiembre"},
-            {"id":5,"dni":"17865325","planilla":"16390730","nombre_completo":"CAPRISTAN CAMPOS MARIA DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL","mes_rol":"Noviembre"},
-            {"id":41,"dni":"42283343","planilla":"16249016","nombre_completo":"CARRANZA CASTILLO JOSE CARLOS ALBERTO","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"DIGITADOR ASISTENCIAL","mes_rol":"Octubre"},
-            {"id":272,"dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL","mes_rol":"Diciembre"}
+            {"id":"1","dni":"18084966","planilla":"14566829","nombre_completo":"DE BRACAMONTE MORALES GASPAR LERIN","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Octubre"},
+            {"id":"2","dni":"17839329","planilla":"14660579","nombre_completo":"AGREDA AVALOS MERARDO SEGUNDO","regimen":"728","servicio":"GINECOLOGIA Y OBSTETRICIA","cargo":"MEDICO","mes_rol":"Mayo"},
+            {"id":"3","dni":"73139738","planilla":"16639354","nombre_completo":"PONCE HARO JOHANA YAJAIRA","regimen":"CAS","servicio":"JMQX","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Julio"},
+            {"id":"4","dni":"40915917","planilla":"16639362","nombre_completo":"MIRANDA MOSTACERO VICKY ELIZABETH","regimen":"CAS","servicio":"ADMINISTRACION","cargo":"AUXILIAR ADMINISTRATIVO","mes_rol":"Setiembre"},
+            {"id":"5","dni":"17865325","planilla":"16390730","nombre_completo":"CAPRISTAN CAMPOS MARIA DEL PILAR","regimen":"728","servicio":"SIN ESPECIALIDAD","cargo":"AUXILIAR DE SERVICIO ASISTENCIAL","mes_rol":"Noviembre"},
+            {"id":"41","dni":"42283343","planilla":"16249016","nombre_completo":"CARRANZA CASTILLO JOSE CARLOS ALBERTO","regimen":"728","servicio":"PLANEMIENTO Y CALIDAD","cargo":"DIGITADOR ASISTENCIAL","mes_rol":"Octubre"},
+            {"id":"272","dni":"42616763","planilla":"16249910","nombre_completo":"ROJAS JULCA MITCHEL JAMES","regimen":"728","servicio":"ADMINISTRACION","cargo":"TRABAJADOR(A) SOCIAL","mes_rol":"Diciembre"}
         ];
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
@@ -635,15 +635,15 @@
         let trabajadorActual = null;
 
         function getHeaders(esEscritura = false) {
-            const headers = {
+            const h = {
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
                 "Content-Type": "application/json"
             };
             if (esEscritura) {
-                headers["Prefer"] = "resolution=merge-duplicates";
+                h["Prefer"] = "resolution=merge-duplicates";
             }
-            return headers;
+            return h;
         }
 
         function inicializarAnosDinamicos() {
@@ -692,20 +692,20 @@
             btn.disabled = true;
 
             try {
-                // 1. SUBIR TRABAJADORES
+                // 1. SUBIR TRABAJADORES CON ID FORMATO TEXTO
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                         method: "POST",
                         headers: getHeaders(true),
                         body: JSON.stringify({
-                            id: parseInt(t.id),
-                            nombre_completo: t.nombre_completo,
-                            dni: t.dni,
-                            planilla: t.planilla,
-                            regimen: t.regimen,
-                            servicio: t.servicio,
-                            cargo: t.cargo,
-                            mes_rol: t.mes_rol
+                            id: String(t.id),
+                            nombre_completo: String(t.nombre_completo || ''),
+                            dni: String(t.dni || ''),
+                            planilla: String(t.planilla || ''),
+                            regimen: String(t.regimen || ''),
+                            servicio: String(t.servicio || ''),
+                            cargo: String(t.cargo || ''),
+                            mes_rol: String(t.mes_rol || '')
                         })
                     }).catch(e => {});
                 }
@@ -717,10 +717,10 @@
                             method: "POST",
                             headers: getHeaders(true),
                             body: JSON.stringify({
-                                trabajador_id: parseInt(id),
+                                trabajador_id: String(id),
                                 periodo_ano: parseInt(k.periodo_ano),
                                 dias_pendientes: parseInt(k.dias_pendientes),
-                                detalle_fechas: k.detalle_fechas,
+                                detalle_fechas: String(k.detalle_fechas || ''),
                                 actualizado_por: 1
                             })
                         }).catch(e => {});
@@ -730,7 +730,7 @@
                 alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos y tramos de vacaciones están 100% almacenados en la Nube.");
                 await descargarDatosSupabase();
             } catch (err) {
-                alert("Sincronización procesada.");
+                alert("Sincronización finalizada.");
             } finally {
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subir Datos a la Nube`;
                 btn.disabled = false;
@@ -763,7 +763,7 @@
 
                 guardarStorage();
             } catch (err) {
-                console.log("Cargando información desde memoria local.");
+                console.log("Cargando desde memoria local.");
             }
         }
 
@@ -842,7 +842,7 @@
 
             lista.forEach(t => {
                 const opt = document.createElement('option');
-                opt.value = t.id;
+                opt.value = String(t.id);
                 opt.innerText = `${t.nombre_completo} [${t.cargo}] [Rol: ${t.mes_rol || 'Octubre'}]`;
                 select.appendChild(opt);
             });
@@ -1055,7 +1055,7 @@
 
         function cargarTrabajador(id) {
             if (!id) return limpiarVistaPantalla();
-            trabajadorActual = listaTrabajadores.find(t => t.id === parseInt(id));
+            trabajadorActual = listaTrabajadores.find(t => String(t.id) === String(id));
             if (!trabajadorActual) return limpiarVistaPantalla();
 
             document.getElementById('lblNombre').innerText = trabajadorActual.nombre_completo;
@@ -1229,11 +1229,11 @@
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
-                    trabajador_id: parseInt(trabajadorActual.id),
+                    trabajador_id: String(trabajadorActual.id),
                     periodo_ano: parseInt(anoEdicionModal),
                     dias_pendientes: parseInt(k.dias_pendientes),
-                    detalle_fechas: k.detalle_fechas,
-                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                    detalle_fechas: String(k.detalle_fechas || ''),
+                    actualizado_por: 1
                 })
             });
 
@@ -1464,11 +1464,11 @@
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
-                    trabajador_id: parseInt(trabajadorActual.id),
+                    trabajador_id: String(trabajadorActual.id),
                     periodo_ano: parseInt(ano),
                     dias_pendientes: parseInt(pend),
-                    detalle_fechas: det,
-                    actualizado_por: usuarioSesion ? usuarioSesion.id : 1
+                    detalle_fechas: String(det || ''),
+                    actualizado_por: 1
                 })
             });
 
@@ -1485,7 +1485,7 @@
             if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
 
             const nuevo = {
-                id: Date.now(),
+                id: String(Date.now()),
                 nombre_completo: document.getElementById('regNombre').value.trim().toUpperCase(),
                 dni: document.getElementById('regDni').value.trim(),
                 planilla: document.getElementById('regPlanilla').value.trim(),
@@ -1502,14 +1502,14 @@
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
-                    id: parseInt(nuevo.id),
-                    nombre_completo: nuevo.nombre_completo,
-                    dni: nuevo.dni,
-                    planilla: nuevo.planilla,
-                    regimen: nuevo.regimen,
-                    servicio: nuevo.servicio,
-                    cargo: nuevo.cargo,
-                    mes_rol: nuevo.mes_rol
+                    id: String(nuevo.id),
+                    nombre_completo: String(nuevo.nombre_completo || ''),
+                    dni: String(nuevo.dni || ''),
+                    planilla: String(nuevo.planilla || ''),
+                    regimen: String(nuevo.regimen || ''),
+                    servicio: String(nuevo.servicio || ''),
+                    cargo: String(nuevo.cargo || ''),
+                    mes_rol: String(nuevo.mes_rol || '')
                 })
             });
 
@@ -1554,13 +1554,13 @@
                 method: "PATCH",
                 headers: getHeaders(false),
                 body: JSON.stringify({
-                    nombre_completo: trabajadorActual.nombre_completo,
-                    dni: trabajadorActual.dni,
-                    planilla: trabajadorActual.planilla,
-                    regimen: trabajadorActual.regimen,
-                    servicio: trabajadorActual.servicio,
-                    cargo: trabajadorActual.cargo,
-                    mes_rol: trabajadorActual.mes_rol
+                    nombre_completo: String(trabajadorActual.nombre_completo || ''),
+                    dni: String(trabajadorActual.dni || ''),
+                    planilla: String(trabajadorActual.planilla || ''),
+                    regimen: String(trabajadorActual.regimen || ''),
+                    servicio: String(trabajadorActual.servicio || ''),
+                    cargo: String(trabajadorActual.cargo || ''),
+                    mes_rol: String(trabajadorActual.mes_rol || '')
                 })
             });
 
@@ -1576,7 +1576,7 @@
                 const confirmacion2 = confirm(`🚨 CONFIRMACIÓN FINAL:\nEsta acción BORRARÁ todo el historial de Kardex y datos de ${trabajadorActual.nombre_completo}.\n\n¿Desea proceder?`);
                 if (confirmacion2) {
                     const idBorrar = trabajadorActual.id;
-                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => t.id !== idBorrar);
+                    TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => String(t.id) !== String(idBorrar));
                     delete KARDEX_MEMORIA[idBorrar];
                     guardarStorage();
 
