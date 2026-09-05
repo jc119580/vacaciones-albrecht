@@ -594,7 +594,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN CON TIPOS STRING DEPURADOS -->
+    <!-- SCRIPT DE CONEXIÓN REST LIMPIO DE PARÁMETROS INVALIDOS -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -692,7 +692,7 @@
             btn.disabled = true;
 
             try {
-                // 1. SUBIR TRABAJADORES CON ID FORMATO TEXTO
+                // 1. SUBIR TRABAJADORES
                 for (let t of TRABAJADORES_BASE) {
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                         method: "POST",
@@ -739,13 +739,13 @@
 
         async function descargarDatosSupabase() {
             try {
-                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*&_nocache=${Date.now()}`, { headers: getHeaders(false) });
+                const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders(false) });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
                 }
 
-                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*&_nocache=${Date.now()}`, { headers: getHeaders(false) });
+                const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*`, { headers: getHeaders(false) });
                 if (respK.ok) {
                     const dataK = await respK.json();
                     if (dataK && dataK.length > 0) {
