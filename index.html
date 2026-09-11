@@ -71,6 +71,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
+                    <!-- BOTÓN DE SINCRONIZACIÓN EXCLUSIVO PARA ADMINISTRADORES -->
                     <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
                         <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Forzar Sincro Nube
                     </button>
@@ -718,7 +719,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL CON SINCRONIZACIÓN AUTOMÁTICA EN TIEMPO REAL -->
+    <!-- SCRIPT PRINCIPAL CON RESTRICCIÓN DE BOTONES SEGÚN PERFIL -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -734,7 +735,7 @@
             { id: 5, username: "JADYT", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Ayuda al Diagnóstico", rol: "VISOR", cargo_jefatura: "Departamento de JADYT" },
             { id: 6, username: "JMQX", password_hash: "Jefatura2026", nombre_completo: "Jefatura Médico Quirúrgica", rol: "VISOR", cargo_jefatura: "Departamento de JMQX" },
             { id: 7, username: "PLANEAMIENTO", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Planeamiento", rol: "VISOR", cargo_jefatura: "Oficina de Planeamiento" },
-            { id: 8, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
+            { id: 8, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "Unidad de Admisión" }
         ];
 
         const MAESTRO_INICIAL = [
@@ -997,12 +998,15 @@
                 document.getElementById('lblUsuarioNombre').innerText = `${usuarioSesion.nombre_completo} (${usuarioSesion.username})`;
                 document.getElementById('lblUsuarioRol').innerText = `${usuarioSesion.rol} - ${usuarioSesion.cargo_jefatura || 'RRHH'}`;
 
+                // CONTROL DE INTERFAZ SEGÚN ROL DE USUARIO
                 if (usuarioSesion.rol === 'VISOR') {
+                    document.getElementById('btnMigrarNubeHeader').classList.add('hidden');
                     document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
                     document.getElementById('formKardexAno').classList.add('hidden');
                     document.getElementById('boxAccionesAdmin').classList.add('hidden');
                     document.getElementById('thAccionesKardex').innerText = "Convenios Adjuntos & Estado";
                 } else {
+                    document.getElementById('btnMigrarNubeHeader').classList.remove('hidden');
                     document.getElementById('moduloRegistrarPersonal').classList.remove('hidden');
                     document.getElementById('formKardexAno').classList.remove('hidden');
                     document.getElementById('boxAccionesAdmin').classList.remove('hidden');
@@ -1894,7 +1898,6 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            // SINCRO AUTOMÁTICA EN TIEMPO REAL CON SUPABASE
             try {
                 await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
                     method: "POST",
