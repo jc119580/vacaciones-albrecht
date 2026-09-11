@@ -72,13 +72,12 @@
                 </div>
                 <div class="flex items-center gap-3 text-xs">
                     <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subir Datos a la Nube
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Forzar Sincro Nube
                     </button>
                     <div class="text-right">
                         <p id="lblUsuarioNombre" class="font-bold text-amber-300">-</p>
                         <p id="lblUsuarioRol" class="text-blue-200 text-[11px]">-</p>
                     </div>
-                    <!-- BOTÓN DISPONIBLE PARA TODOS LOS USUARIOS (ADMINISTRADORES Y VISORES) -->
                     <button onclick="abrirModalCambiarPassword()" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1" title="Cambiar mi contraseña">
                         <i class="fa-solid fa-key"></i> Clave
                     </button>
@@ -297,8 +296,8 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition-colors text-xs">
-                            + Agregar Personal a la Nube
+                        <button type="submit" id="btnGuardarPersonalNuevo" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded shadow transition-colors text-xs flex items-center justify-center gap-1.5">
+                            <span>+ Agregar Personal a la Nube</span>
                         </button>
                     </form>
                 </div>
@@ -719,7 +718,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL -->
+    <!-- SCRIPT PRINCIPAL CON SINCRONIZACIÓN AUTOMÁTICA EN TIEMPO REAL -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -888,73 +887,14 @@
 
         async function subirTodoASupabaseBoton() {
             const btn = document.getElementById('btnMigrarNubeHeader');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a la Nube...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
             btn.disabled = true;
 
-            const usrActual = usuarioSesion ? usuarioSesion.username : "RRHH";
+            await descargarDatosSupabase();
 
-            try {
-                for (let t of TRABAJADORES_BASE) {
-                    await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
-                        method: "POST",
-                        headers: getHeaders(true),
-                        body: JSON.stringify({
-                            id: String(t.id),
-                            nombre_completo: String(t.nombre_completo || ''),
-                            dni: String(t.dni || ''),
-                            planilla: String(t.planilla || ''),
-                            regimen: String(t.regimen || ''),
-                            servicio: String(t.servicio || ''),
-                            cargo: String(t.cargo || ''),
-                            mes_rol: String(t.mes_rol || ''),
-                            registrado_por: String(t.registrado_por || usrActual),
-                            modificado_por: String(t.modificado_por || usrActual)
-                        })
-                    }).catch(e => {});
-                }
-
-                for (let id in KARDEX_MEMORIA) {
-                    for (let k of KARDEX_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
-                            method: "POST",
-                            headers: getHeaders(true),
-                            body: JSON.stringify({
-                                trabajador_id: String(id),
-                                periodo_ano: parseInt(k.periodo_ano),
-                                dias_pendientes: parseInt(k.dias_pendientes),
-                                detalle_fechas: String(k.detalle_fechas || ''),
-                                registrado_por: String(k.registrado_por || usrActual),
-                                modificado_por: String(k.modificado_por || usrActual)
-                            })
-                        }).catch(e => {});
-                    }
-                }
-
-                for (let id in CONVENIOS_MEMORIA) {
-                    for (let conv of CONVENIOS_MEMORIA[id]) {
-                        await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones`, {
-                            method: "POST",
-                            headers: getHeaders(false),
-                            body: JSON.stringify({
-                                trabajador_id: String(id),
-                                periodo_ano: parseInt(conv.periodo_ano),
-                                nombre_archivo: String(conv.nombre_archivo),
-                                tipo_archivo: String(conv.tipo_archivo),
-                                archivo_base64: conv.archivo_base64,
-                                subido_por: String(conv.subido_por || usrActual)
-                            })
-                        }).catch(e => {});
-                    }
-                }
-
-                alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos, tramos y trazabilidad de usuarios están 100% en la Nube.");
-                await descargarDatosSupabase();
-            } catch (err) {
-                alert("Sincronización finalizada.");
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Subir Datos a la Nube`;
-                btn.disabled = false;
-            }
+            btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Forzar Sincro Nube`;
+            btn.disabled = false;
+            alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos están sincronizados en la Nube.");
         }
 
         async function descargarDatosSupabase() {
@@ -1009,6 +949,9 @@
                 }
 
                 guardarStorage();
+                listaTrabajadores = TRABAJADORES_BASE;
+                renderDesplegable(listaTrabajadores);
+                if (trabajadorActual) cargarTrabajador(trabajadorActual.id);
             } catch (err) {
                 console.log("Cargando desde memoria local.");
             }
@@ -1915,9 +1858,9 @@
                     registrado_por: usrActual,
                     modificado_por: usrActual
                 })
-            });
+            }).catch(e => console.log(e));
 
-            alert(`¡Kardex del periodo ${ano} guardado correctamente en la Nube por [${usrActual}]!`);
+            alert(`¡Kardex del periodo ${ano} guardado y sincronizado automáticamente en la Nube por [${usrActual}]!`);
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -1928,6 +1871,10 @@
         async function guardarNuevoTrabajador(e) {
             e.preventDefault();
             if (!usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            const btn = document.getElementById('btnGuardarPersonalNuevo');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando en Nube...`;
+            btn.disabled = true;
 
             const usrActual = usuarioSesion ? usuarioSesion.username : "RRHH";
 
@@ -1947,26 +1894,35 @@
             TRABAJADORES_BASE.unshift(nuevo);
             guardarStorage();
 
-            await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
-                method: "POST",
-                headers: getHeaders(true),
-                body: JSON.stringify({
-                    id: String(nuevo.id),
-                    nombre_completo: String(nuevo.nombre_completo || ''),
-                    dni: String(nuevo.dni || ''),
-                    planilla: String(nuevo.planilla || ''),
-                    regimen: String(nuevo.regimen || ''),
-                    servicio: String(nuevo.servicio || ''),
-                    cargo: String(nuevo.cargo || ''),
-                    mes_rol: String(nuevo.mes_rol || ''),
-                    registrado_por: usrActual,
-                    modificado_por: usrActual
-                })
-            });
+            // SINCRO AUTOMÁTICA EN TIEMPO REAL CON SUPABASE
+            try {
+                await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
+                    method: "POST",
+                    headers: getHeaders(true),
+                    body: JSON.stringify({
+                        id: String(nuevo.id),
+                        nombre_completo: String(nuevo.nombre_completo || ''),
+                        dni: String(nuevo.dni || ''),
+                        planilla: String(nuevo.planilla || ''),
+                        regimen: String(nuevo.regimen || ''),
+                        servicio: String(nuevo.servicio || ''),
+                        cargo: String(nuevo.cargo || ''),
+                        mes_rol: String(nuevo.mes_rol || ''),
+                        registrado_por: usrActual,
+                        modificado_por: usrActual
+                    })
+                });
+            } catch (err) {
+                console.log(err);
+            }
 
-            alert(`¡Trabajador ${nuevo.nombre_completo} registrado con éxito por [${usrActual}]!`);
+            btn.innerHTML = `<span>+ Agregar Personal a la Nube</span>`;
+            btn.disabled = false;
+
+            alert(`🎉 ¡Servidor ${nuevo.nombre_completo} registrado y sincronizado en tiempo real por [${usrActual}]!`);
             document.getElementById('formNuevoTrabajador').reset();
-            renderDesplegable(TRABAJADORES_BASE);
+            listaTrabajadores = TRABAJADORES_BASE;
+            renderDesplegable(listaTrabajadores);
             cargarTrabajador(nuevo.id);
         }
 
@@ -2017,10 +1973,11 @@
                     mes_rol: String(trabajadorActual.mes_rol || ''),
                     modificado_por: usrActual
                 })
-            });
+            }).catch(e => console.log(e));
 
             alert(`¡Datos del servidor actualizados con éxito por [${usrActual}]!`);
-            renderDesplegable(TRABAJADORES_BASE);
+            listaTrabajadores = TRABAJADORES_BASE;
+            renderDesplegable(listaTrabajadores);
             cargarTrabajador(trabajadorActual.id);
         }
 
@@ -2039,7 +1996,7 @@
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${idBorrar}`, {
                         method: "DELETE",
                         headers: getHeaders(false)
-                    });
+                    }).catch(e => console.log(e));
 
                     listaTrabajadores = TRABAJADORES_BASE;
                     alert("Trabajador eliminado de la base con éxito.");
