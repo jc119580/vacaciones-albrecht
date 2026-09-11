@@ -404,7 +404,7 @@
                         </div>
                     </form>
 
-                    <!-- TABLA KARDEX AUDITADO -->
+                    <!-- TABLA KARDEX AUDITADO CON MÓDULO DE CONVENIOS -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs text-left border-collapse">
                             <thead>
@@ -414,7 +414,7 @@
                                     <th class="p-2 border">Días Computados (Gozados / Programados)</th>
                                     <th class="p-2 border">Historial Completo Cronológico de Tramos / Fechas</th>
                                     <th class="p-2 border">Saldo Pendiente</th>
-                                    <th id="thAccionesKardex" class="p-2 border">Acciones</th>
+                                    <th id="thAccionesKardex" class="p-2 border">Acciones & Convenios</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyKardex">
@@ -472,6 +472,63 @@
                     </button>
                     <button type="button" onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded shadow">Cerrar</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADJUNTAR CONVENIOS FIRMADOS -->
+    <div id="modalSubirConvenio" class="hidden fixed inset-0 bg-slate-900/70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up text-emerald-600"></i> Adjuntar Convenio Escaneado (Periodo <span id="lblAnoModalSubirConvenio">2026</span>)
+                </h3>
+                <button onclick="cerrarModalSubirConvenio()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="guardarConvenioArchivo(event)" class="space-y-3">
+                <div>
+                    <label class="block text-slate-600 mb-1 font-semibold">Seleccionar Documento / Foto del Convenio:</label>
+                    <input type="file" id="fileConvenioInput" required accept="image/*,.pdf" class="w-full border rounded p-2 bg-slate-50 text-slate-700 text-xs">
+                    <p class="text-[10px] text-slate-400 mt-1">Formatos permitidos: PDF, JPG, PNG o Fotos tomadas desde el celular.</p>
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1 font-semibold">Nombre o Descripción Breve del Convenio:</label>
+                    <input type="text" id="txtNombreConvenioInput" placeholder="Ej. Convenio Firmado Tramo Enero 10 dias" required class="w-full border rounded p-2 bg-slate-50 text-slate-800 font-semibold outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button type="button" onclick="cerrarModalSubirConvenio()" class="px-3 py-1.5 border rounded font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" id="btnGuardarConvenioModal" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Subir a la Nube
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL VISUALIZAR CONVENIOS ATACHADOS -->
+    <div id="modalVerConvenios" class="hidden fixed inset-0 bg-slate-900/70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-3xl w-full space-y-4 text-xs max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open text-blue-600"></i> Convenios Registrados del Periodo <span id="lblAnoModalVerConvenios">2026</span>
+                </h3>
+                <button onclick="cerrarModalVerConvenios()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1">
+                <p id="lblTrabajadorConveniosVer" class="font-bold text-slate-700 text-xs border-b pb-1">-</p>
+                <div id="contenedorListaConveniosVisualizar" class="space-y-3">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t">
+                <button type="button" onclick="cerrarModalVerConvenios()" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded shadow">Cerrar</button>
             </div>
         </div>
     </div>
@@ -594,7 +651,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN REST LIMPIO DE PARÁMETROS INVALIDOS -->
+    <!-- SCRIPT DE CONEXIÓN CON SOPORTE PARA ADJUNTAR CONVENIOS -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -623,11 +680,14 @@
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
         let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
+        let CONVENIOS_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_CONVENIOS")) || {};
         let anoEdicionModal = ANO_ACTUAL;
+        let anoConvenioAdjuntar = ANO_ACTUAL;
 
         function guardarStorage() {
             localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
             localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
+            localStorage.setItem("ALBRECHT_CONVENIOS", JSON.stringify(CONVENIOS_MEMORIA));
         }
 
         let usuarioSesion = null;
@@ -727,7 +787,24 @@
                     }
                 }
 
-                alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos y tramos de vacaciones están 100% almacenados en la Nube.");
+                // 3. SUBIR CONVENIOS
+                for (let id in CONVENIOS_MEMORIA) {
+                    for (let conv of CONVENIOS_MEMORIA[id]) {
+                        await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones`, {
+                            method: "POST",
+                            headers: getHeaders(false),
+                            body: JSON.stringify({
+                                trabajador_id: String(id),
+                                periodo_ano: parseInt(conv.periodo_ano),
+                                nombre_archivo: String(conv.nombre_archivo),
+                                tipo_archivo: String(conv.tipo_archivo),
+                                archivo_base64: conv.archivo_base64
+                            })
+                        }).catch(e => {});
+                    }
+                }
+
+                alert("🎉 ¡SINCRO COMPLETADA CON ÉXITO!\nTodos tus datos, tramos y convenios adjuntos están 100% almacenados en la Nube.");
                 await descargarDatosSupabase();
             } catch (err) {
                 alert("Sincronización finalizada.");
@@ -756,6 +833,24 @@
                                 periodo_ano: k.periodo_ano,
                                 dias_pendientes: k.dias_pendientes,
                                 detalle_fechas: k.detalle_fechas
+                            });
+                        });
+                    }
+                }
+
+                const respC = await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?select=*`, { headers: getHeaders(false) });
+                if (respC.ok) {
+                    const dataC = await respC.json();
+                    if (dataC && dataC.length > 0) {
+                        CONVENIOS_MEMORIA = {};
+                        dataC.forEach(c => {
+                            if (!CONVENIOS_MEMORIA[c.trabajador_id]) CONVENIOS_MEMORIA[c.trabajador_id] = [];
+                            CONVENIOS_MEMORIA[c.trabajador_id].push({
+                                id: c.id,
+                                periodo_ano: c.periodo_ano,
+                                nombre_archivo: c.nombre_archivo,
+                                tipo_archivo: c.tipo_archivo,
+                                archivo_base64: c.archivo_base64
                             });
                         });
                     }
@@ -811,12 +906,12 @@
                     document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
                     document.getElementById('formKardexAno').classList.add('hidden');
                     document.getElementById('boxAccionesAdmin').classList.add('hidden');
-                    document.getElementById('thAccionesKardex').innerText = "Estado";
+                    document.getElementById('thAccionesKardex').innerText = "Convenios Adjuntos & Estado";
                 } else {
                     document.getElementById('moduloRegistrarPersonal').classList.remove('hidden');
                     document.getElementById('formKardexAno').classList.remove('hidden');
                     document.getElementById('boxAccionesAdmin').classList.remove('hidden');
-                    document.getElementById('thAccionesKardex').innerText = "Acciones";
+                    document.getElementById('thAccionesKardex').innerText = "Acciones & Convenios";
                 }
 
                 listaTrabajadores = TRABAJADORES_BASE;
@@ -1123,10 +1218,25 @@
                     alertaDomingoHTML = `<span class="inline-block mt-1 bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⚠️ Falta 1 Domingo (${domingosEnHistorial}/2)</span>`;
                 }
 
+                // CONTAR CONVENIOS ARCHIVADOS PARA ESTE AÑO
+                const convs = CONVENIOS_MEMORIA[trabajadorActual.id] || [];
+                const convsAno = convs.filter(c => c.periodo_ano === k.periodo_ano);
+                const numConvenios = convsAno.length;
+
                 let celdaAccionesHTML = "";
+                const btnVerConveniosHTML = `
+                    <button onclick="abrirModalVerConvenios(${k.periodo_ano})" class="bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300 px-2 py-1 rounded font-bold text-[10px] flex items-center gap-1" title="Ver convenios escaneados">
+                        <i class="fa-solid fa-folder-open"></i> Ver Convenios (${numConvenios})
+                    </button>
+                `;
+
                 if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
                     celdaAccionesHTML = `
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button onclick="abrirModalSubirConvenio(${k.periodo_ano})" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 px-2 py-1 rounded font-bold text-[10px] flex items-center gap-1" title="Adjuntar documento de convenio escaneado">
+                                <i class="fa-solid fa-file-arrow-up"></i> + Convenio
+                            </button>
+                            ${btnVerConveniosHTML}
                             <button onclick="abrirModalTramoAno(${k.periodo_ano})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded font-bold text-[10px]" title="Gestionar tramos de este año">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar Tramos
                             </button>
@@ -1139,7 +1249,12 @@
                         </div>
                     `;
                 } else {
-                    celdaAccionesHTML = `<span class="text-slate-400 font-semibold italic text-[11px]">Solo Consulta</span>`;
+                    celdaAccionesHTML = `
+                        <div class="flex items-center gap-1.5">
+                            ${btnVerConveniosHTML}
+                            <span class="text-slate-400 font-semibold italic text-[11px]">Solo Consulta</span>
+                        </div>
+                    `;
                 }
 
                 const tr = document.createElement('tr');
@@ -1169,6 +1284,155 @@
             document.getElementById('lblAdelanto2027').innerText = `${adelantoSiguiente} Días`;
 
             sincronizarFormularioConTabla();
+        }
+
+        // --- GESTIÓN DE MODALES DE CONVENIOS ---
+        function abrirModalSubirConvenio(ano) {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            anoConvenioAdjuntar = ano;
+            document.getElementById('lblAnoModalSubirConvenio').innerText = ano;
+            document.getElementById('txtNombreConvenioInput').value = `Convenio Firmado Periodo ${ano}`;
+            document.getElementById('fileConvenioInput').value = '';
+            document.getElementById('modalSubirConvenio').classList.remove('hidden');
+        }
+
+        function cerrarModalSubirConvenio() {
+            document.getElementById('modalSubirConvenio').classList.add('hidden');
+        }
+
+        async function guardarConvenioArchivo(e) {
+            e.preventDefault();
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+
+            const fileInput = document.getElementById('fileConvenioInput');
+            const desc = document.getElementById('txtNombreConvenioInput').value.trim();
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Por favor seleccione un archivo escaneado o foto del convenio.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const btn = document.getElementById('btnGuardarConvenioModal');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const base64Data = evt.target.result;
+                const tipo = file.type.includes('pdf') ? 'pdf' : 'imagen';
+
+                const objetoConvenio = {
+                    trabajador_id: String(trabajadorActual.id),
+                    periodo_ano: parseInt(anoConvenioAdjuntar),
+                    nombre_archivo: desc || file.name,
+                    tipo_archivo: tipo,
+                    archivo_base64: base64Data
+                };
+
+                if (!CONVENIOS_MEMORIA[trabajadorActual.id]) CONVENIOS_MEMORIA[trabajadorActual.id] = [];
+                CONVENIOS_MEMORIA[trabajadorActual.id].push(objetoConvenio);
+                guardarStorage();
+
+                // SUBIR DIRECTAMENTE A LA NUBE (SUPABASE)
+                await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones`, {
+                    method: "POST",
+                    headers: getHeaders(false),
+                    body: JSON.stringify(objetoConvenio)
+                }).catch(e => {});
+
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Subir a la Nube`;
+                btn.disabled = false;
+
+                alert("🎉 ¡Convenio adjuntado y guardado correctamente en la Nube!");
+                cerrarModalSubirConvenio();
+                cargarTrabajador(trabajadorActual.id);
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function abrirModalVerConvenios(ano) {
+            if (!trabajadorActual) return;
+            document.getElementById('lblAnoModalVerConvenios').innerText = ano;
+            document.getElementById('lblTrabajadorConveniosVer').innerText = `Servidor: ${trabajadorActual.nombre_completo} [DNI: ${trabajadorActual.dni}]`;
+
+            const contenedor = document.getElementById('contenedorListaConveniosVisualizar');
+            contenedor.innerHTML = "";
+
+            const convs = CONVENIOS_MEMORIA[trabajadorActual.id] || [];
+            const convsAno = convs.filter(c => c.periodo_ano === ano);
+
+            if (convsAno.length === 0) {
+                contenedor.innerHTML = `<p class="text-slate-500 italic p-4 text-center">No se han adjuntado convenios escaneados para el periodo ${ano}.</p>`;
+            } else {
+                convsAno.forEach((c, idx) => {
+                    const card = document.createElement('div');
+                    card.className = "p-3 border rounded-lg bg-slate-50 space-y-2";
+
+                    let visorHTML = "";
+                    if (c.tipo_archivo === 'pdf') {
+                        visorHTML = `<iframe src="${c.archivo_base64}" class="w-full h-80 rounded border"></iframe>`;
+                    } else {
+                        visorHTML = `<img src="${c.archivo_base64}" class="max-h-96 mx-auto rounded border object-contain bg-white">`;
+                    }
+
+                    let btnBorrarHTML = "";
+                    if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
+                        btnBorrarHTML = `
+                            <button onclick="eliminarConvenioIndividual('${c.id || idx}', ${ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1">
+                                <i class="fa-solid fa-trash"></i> Eliminar Documento
+                            </button>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center border-b pb-1">
+                            <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid ${c.tipo_archivo === 'pdf' ? 'fa-file-pdf text-red-600' : 'fa-file-image text-blue-600'}"></i> ${c.nombre_archivo}
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <a href="${c.archivo_base64}" download="${c.nombre_archivo}" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1">
+                                    <i class="fa-solid fa-download"></i> Descargar
+                                </a>
+                                ${btnBorrarHTML}
+                            </div>
+                        </div>
+                        <div class="pt-1">
+                            ${visorHTML}
+                        </div>
+                    `;
+                    contenedor.appendChild(card);
+                });
+            }
+
+            document.getElementById('modalVerConvenios').classList.remove('hidden');
+        }
+
+        function cerrarModalVerConvenios() {
+            document.getElementById('modalVerConvenios').classList.add('hidden');
+        }
+
+        async function eliminarConvenioIndividual(idOrIdx, ano) {
+            if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
+            const confirmación = confirm("¿Está seguro de eliminar este convenio escaneado?");
+            if (confirmación) {
+                if (CONVENIOS_MEMORIA[trabajadorActual.id]) {
+                    CONVENIOS_MEMORIA[trabajadorActual.id] = CONVENIOS_MEMORIA[trabajadorActual.id].filter(c => String(c.id || '') !== String(idOrIdx));
+                    guardarStorage();
+                }
+
+                if (String(idOrIdx).length > 0 && !isNaN(idOrIdx)) {
+                    await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?id=eq.${idOrIdx}`, {
+                        method: "DELETE",
+                        headers: getHeaders(false)
+                    }).catch(e => {});
+                }
+
+                alert("Convenio eliminado con éxito.");
+                abrirModalVerConvenios(ano);
+                cargarTrabajador(trabajadorActual.id);
+            }
         }
 
         function abrirModalTramoAno(ano) {
@@ -1578,6 +1842,7 @@
                     const idBorrar = trabajadorActual.id;
                     TRABAJADORES_BASE = TRABAJADORES_BASE.filter(t => String(t.id) !== String(idBorrar));
                     delete KARDEX_MEMORIA[idBorrar];
+                    delete CONVENIOS_MEMORIA[idBorrar];
                     guardarStorage();
 
                     await fetch(`${SUPABASE_BASE_URL}/trabajadores?id=eq.${idBorrar}`, {
