@@ -71,7 +71,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
-                    <!-- BOTÓN DE SINCRONIZACIÓN EXCLUSIVO PARA ADMINISTRADORES -->
                     <button id="btnMigrarNubeHeader" onclick="subirTodoASupabaseBoton()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold shadow transition-colors flex items-center gap-1.5">
                         <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Forzar Sincro Nube
                     </button>
@@ -719,7 +718,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL CON RESTRICCIÓN DE BOTONES SEGÚN PERFIL -->
+    <!-- SCRIPT PRINCIPAL CON ELIMINACIÓN DE CONVENIOS CORREGIDA -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -772,7 +771,7 @@
                 "Content-Type": "application/json"
             };
             if (esEscritura) {
-                h["Prefer"] = "resolution=merge-duplicates";
+                h["Prefer"] = "return=representation";
             }
             return h;
         }
@@ -927,12 +926,13 @@
                 const respC = await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?select=*`, { headers: getHeaders(false) });
                 if (respC.ok) {
                     const dataC = await respC.json();
-                    if (dataC && dataC.length > 0) {
+                    if (dataC) {
                         CONVENIOS_MEMORIA = {};
                         dataC.forEach(c => {
                             if (!CONVENIOS_MEMORIA[c.trabajador_id]) CONVENIOS_MEMORIA[c.trabajador_id] = [];
                             CONVENIOS_MEMORIA[c.trabajador_id].push({
                                 id: c.id,
+                                trabajador_id: String(c.trabajador_id),
                                 periodo_ano: c.periodo_ano,
                                 nombre_archivo: c.nombre_archivo,
                                 tipo_archivo: c.tipo_archivo,
@@ -998,7 +998,6 @@
                 document.getElementById('lblUsuarioNombre').innerText = `${usuarioSesion.nombre_completo} (${usuarioSesion.username})`;
                 document.getElementById('lblUsuarioRol').innerText = `${usuarioSesion.rol} - ${usuarioSesion.cargo_jefatura || 'RRHH'}`;
 
-                // CONTROL DE INTERFAZ SEGÚN ROL DE USUARIO
                 if (usuarioSesion.rol === 'VISOR') {
                     document.getElementById('btnMigrarNubeHeader').classList.add('hidden');
                     document.getElementById('moduloRegistrarPersonal').classList.add('hidden');
@@ -1437,15 +1436,26 @@
                     subido_por: usrActual
                 };
 
+                try {
+                    const resp = await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones`, {
+                        method: "POST",
+                        headers: getHeaders(true),
+                        body: JSON.stringify(objetoConvenio)
+                    });
+
+                    if (resp.ok) {
+                        const dataRes = await resp.json();
+                        if (dataRes && dataRes.length > 0 && dataRes[0].id) {
+                            objetoConvenio.id = dataRes[0].id;
+                        }
+                    }
+                } catch (err) {
+                    console.log(err);
+                }
+
                 if (!CONVENIOS_MEMORIA[trabajadorActual.id]) CONVENIOS_MEMORIA[trabajadorActual.id] = [];
                 CONVENIOS_MEMORIA[trabajadorActual.id].push(objetoConvenio);
                 guardarStorage();
-
-                await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones`, {
-                    method: "POST",
-                    headers: getHeaders(false),
-                    body: JSON.stringify(objetoConvenio)
-                }).catch(e => {});
 
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Subir a la Nube`;
                 btn.disabled = false;
@@ -1467,7 +1477,7 @@
             contenedor.innerHTML = "";
 
             const convs = CONVENIOS_MEMORIA[trabajadorActual.id] || [];
-            const convsAno = convs.filter(c => c.periodo_ano === ano);
+            const convsAno = convs.filter(c => parseInt(c.periodo_ano) === parseInt(ano));
 
             if (convsAno.length === 0) {
                 contenedor.innerHTML = `<p class="text-slate-500 italic p-4 text-center">No se han adjuntado convenios escaneados para el periodo ${ano}.</p>`;
@@ -1485,8 +1495,9 @@
 
                     let btnBorrarHTML = "";
                     if (usuarioSesion && usuarioSesion.rol === 'ADMINISTRADOR') {
+                        const idIdentificador = c.id !== undefined && c.id !== null ? String(c.id) : `idx_${idx}`;
                         btnBorrarHTML = `
-                            <button onclick="eliminarConvenioIndividual('${c.id || idx}', ${ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1">
+                            <button onclick="eliminarConvenioIndividual('${idIdentificador}', ${ano})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1">
                                 <i class="fa-solid fa-trash"></i> Eliminar Documento
                             </button>
                         `;
@@ -1522,20 +1533,31 @@
             document.getElementById('modalVerConvenios').classList.add('hidden');
         }
 
-        async function eliminarConvenioIndividual(idOrIdx, ano) {
+        async function eliminarConvenioIndividual(idIdentificador, ano) {
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm("¿Está seguro de eliminar este convenio escaneado?");
             if (confirmacion) {
+                const idStr = String(idIdentificador);
+
                 if (CONVENIOS_MEMORIA[trabajadorActual.id]) {
-                    CONVENIOS_MEMORIA[trabajadorActual.id] = CONVENIOS_MEMORIA[trabajadorActual.id].filter(c => String(c.id || '') !== String(idOrIdx));
+                    if (idStr.startsWith("idx_")) {
+                        const index = parseInt(idStr.replace("idx_", ""));
+                        CONVENIOS_MEMORIA[trabajadorActual.id].splice(index, 1);
+                    } else {
+                        CONVENIOS_MEMORIA[trabajadorActual.id] = CONVENIOS_MEMORIA[trabajadorActual.id].filter(c => String(c.id) !== idStr);
+                    }
                     guardarStorage();
                 }
 
-                if (String(idOrIdx).length > 0 && !isNaN(idOrIdx)) {
-                    await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?id=eq.${idOrIdx}`, {
-                        method: "DELETE",
-                        headers: getHeaders(false)
-                    }).catch(e => {});
+                if (!idStr.startsWith("idx_")) {
+                    try {
+                        await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?id=eq.${idStr}`, {
+                            method: "DELETE",
+                            headers: getHeaders(false)
+                        });
+                    } catch (e) {
+                        console.log(e);
+                    }
                 }
 
                 alert("Convenio eliminado con éxito.");
