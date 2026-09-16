@@ -913,9 +913,9 @@
                         dataK.forEach(k => {
                             if (!KARDEX_MEMORIA[k.trabajador_id]) KARDEX_MEMORIA[k.trabajador_id] = [];
                             KARDEX_MEMORIA[k.trabajador_id].push({
-                                periodo_ano: k.periodo_ano,
-                                dias_pendientes: k.dias_pendientes,
-                                detalle_fechas: k.detalle_fechas,
+                                periodo_ano: parseInt(k.periodo_ano),
+                                dias_pendientes: parseInt(k.dias_pendientes),
+                                detalle_fechas: k.historial_tramos || k.detalle_fechas || '',
                                 registrado_por: k.registrado_por || 'RRHH',
                                 modificado_por: k.modificado_por || 'RRHH'
                             });
@@ -933,7 +933,7 @@
                             CONVENIOS_MEMORIA[c.trabajador_id].push({
                                 id: c.id,
                                 trabajador_id: String(c.trabajador_id),
-                                periodo_ano: c.periodo_ano,
+                                periodo_ano: parseInt(c.periodo_ano),
                                 nombre_archivo: c.nombre_archivo,
                                 tipo_archivo: c.tipo_archivo,
                                 archivo_base64: c.archivo_base64,
@@ -1623,17 +1623,23 @@
 
             guardarStorage();
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
+            const curIdPeriodo = `${trabajadorActual.id}_${anoEdicionModal}`;
+
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
                     trabajador_id: String(trabajadorActual.id),
-                    periodo_ano: parseInt(anoEdicionModal),
+                    periodo_ano: String(anoEdicionModal),
+                    dias_computados: 30,
+                    dias_gozados: totalDiasGozadosNuevos,
                     dias_pendientes: parseInt(k.dias_pendientes),
-                    detalle_fechas: String(k.detalle_fechas || ''),
+                    saldo_pendiente: parseInt(k.dias_pendientes),
+                    historial_tramos: String(k.detalle_fechas || ''),
+                    cur_id_periodo: curIdPeriodo,
                     modificado_por: usrActual
                 })
-            });
+            }).catch(e => console.log(e));
 
             alert(`¡Tramo eliminado y saldo recalculado con éxito por [${usrActual}]!`);
             abrirModalTramoAno(anoEdicionModal);
@@ -1849,6 +1855,23 @@
             const det = document.getElementById('kardexFechasDetalle').value.trim();
             const usrActual = usuarioSesion ? usuarioSesion.username : "RRHH";
 
+            // --- VALIDACIÓN ESTRICTA: RESTRICCIÓN DE 4 DOMINGOS PARA EL ÚLTIMO TRAMO ---
+            if (pend === 0) {
+                let domingosTotalesAcumulados = 0;
+                const matchesDomingos = det.match(/Incluye (\d+) domingos?/g);
+                if (matchesDomingos) {
+                    matchesDomingos.forEach(m => {
+                        const n = parseInt(m.replace(/\D/g, ''));
+                        if (!isNaN(n)) domingosTotalesAcumulados += n;
+                    });
+                }
+
+                if (domingosTotalesAcumulados < 4) {
+                    alert(`🚨 RESTRICCIÓN NORMATIVA DENEGADA:\nNo se puede registrar este último tramo porque agota el periodo a 0 días pendientes y solo acumula ${domingosTotalesAcumulados} domingo(s).\n\nPor normativa de EsSalud, para liquidar un periodo completo de 30 días debe acumular obligatoriamente un mínimo de 4 domingos. Ajuste las fechas del tramo.`);
+                    return;
+                }
+            }
+
             if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
             
             const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
@@ -1873,14 +1896,21 @@
 
             guardarStorage();
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=trabajador_id,periodo_ano`, {
+            const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
+            const diasGozadosNuevos = 30 - pend;
+
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
                     trabajador_id: String(trabajadorActual.id),
-                    periodo_ano: parseInt(ano),
+                    periodo_ano: String(ano),
+                    dias_computados: 30,
+                    dias_gozados: diasGozadosNuevos,
                     dias_pendientes: parseInt(pend),
-                    detalle_fechas: String(det || ''),
+                    saldo_pendiente: parseInt(pend),
+                    historial_tramos: String(det || ''),
+                    cur_id_periodo: curIdPeriodo,
                     registrado_por: usrActual,
                     modificado_por: usrActual
                 })
