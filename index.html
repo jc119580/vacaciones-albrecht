@@ -718,7 +718,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL CON ELIMINACIÓN DE CONVENIOS CORREGIDA -->
+    <!-- SCRIPT PRINCIPAL INTEGRADO -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
@@ -771,7 +771,7 @@
                 "Content-Type": "application/json"
             };
             if (esEscritura) {
-                h["Prefer"] = "return=representation";
+                h["Prefer"] = "resolution=merge-duplicates,return=representation";
             }
             return h;
         }
@@ -1625,7 +1625,7 @@
 
             const curIdPeriodo = `${trabajadorActual.id}_${anoEdicionModal}`;
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=cur_id_periodo`, {
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
@@ -1636,6 +1636,7 @@
                     dias_pendientes: parseInt(k.dias_pendientes),
                     saldo_pendiente: parseInt(k.dias_pendientes),
                     historial_tramos: String(k.detalle_fechas || ''),
+                    detalle_fechas: String(k.detalle_fechas || ''),
                     cur_id_periodo: curIdPeriodo,
                     modificado_por: usrActual
                 })
@@ -1791,15 +1792,28 @@
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
             if (confirmacion) {
+                // 1. Limpiar memoria local
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
                 guardarStorage();
 
-                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
-                    method: "DELETE",
-                    headers: getHeaders(false)
-                });
+                const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
 
-                alert(`Periodo ${ano} eliminado con éxito por [${usuarioSesion.username}].`);
+                // 2. Ejecutar borrado exacto en Supabase por ID de trabajador o clave compuesta
+                try {
+                    await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?cur_id_periodo=eq.${curIdPeriodo}`, {
+                        method: "DELETE",
+                        headers: getHeaders(false)
+                    });
+
+                    await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                        method: "DELETE",
+                        headers: getHeaders(false)
+                    });
+                } catch(e) {
+                    console.log(e);
+                }
+
+                alert(`Periodo ${ano} eliminado con éxito de la Nube por [${usuarioSesion.username}].`);
                 cargarTrabajador(trabajadorActual.id);
             }
         }
@@ -1813,10 +1827,16 @@
                 KARDEX_MEMORIA[trabajadorActual.id].push({ periodo_ano: ano, dias_pendientes: 30, detalle_fechas: "Sin registros gozados", registrado_por: usrActual, modificado_por: usrActual });
                 guardarStorage();
 
-                await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
-                    method: "DELETE",
-                    headers: getHeaders(false)
-                });
+                const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
+
+                try {
+                    await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?cur_id_periodo=eq.${curIdPeriodo}`, {
+                        method: "DELETE",
+                        headers: getHeaders(false)
+                    });
+                } catch(e) {
+                    console.log(e);
+                }
 
                 alert(`Periodo ${ano} restaurado a 30 días de saldo por [${usrActual}].`);
                 cargarTrabajador(trabajadorActual.id);
@@ -1899,7 +1919,7 @@
             const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
             const diasGozadosNuevos = 30 - pend;
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=cur_id_periodo`, {
                 method: "POST",
                 headers: getHeaders(true),
                 body: JSON.stringify({
@@ -1910,6 +1930,7 @@
                     dias_pendientes: parseInt(pend),
                     saldo_pendiente: parseInt(pend),
                     historial_tramos: String(det || ''),
+                    detalle_fechas: String(det || ''),
                     cur_id_periodo: curIdPeriodo,
                     registrado_por: usrActual,
                     modificado_por: usrActual
