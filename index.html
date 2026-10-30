@@ -8,9 +8,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @media print {
-            body * { visibility: hidden; }
-            #areaImpresionReporte, #areaImpresionReporte * { visibility: visible; }
-            #areaImpresionReporte { position: absolute; left: 0; top: 0; width: 100%; }
+            /* 1. Ocultar toda la interfaz web */
+            #pantallaLogin, 
+            #pantallaSistema, 
+            #modalReporte, 
+            #modalCambiarPassword, 
+            #modalSubirConvenio, 
+            #modalVerConvenios, 
+            #modalEditarTrabajador, 
+            #modalEditarTramo {
+                display: none !important;
+            }
+
+            /* 2. Mostrar únicamente el contenedor clonado de impresión */
+            #contenedorImpresionDirecta {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+
+            /* 3. Asegurar saltos de página limpios y sin solapamiento de filas */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+
+            tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            thead {
+                display: table-header-group !important; /* Repite cabecera en cada hoja */
+            }
+
+            @page {
+                size: landscape;
+                margin: 10mm;
+            }
+
+            body {
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -1151,8 +1194,22 @@
             document.getElementById('modalReporte').classList.add('hidden');
         }
 
+        // FUNCIÓN DE IMPRESIÓN DIRECTA SIN CONFLICTOS DE DISPLAY NI MODALES
         function imprimirReporte() {
+            const areaOriginal = document.getElementById('areaImpresionReporte');
+            if (!areaOriginal) return;
+
+            // 1. Crear clon limpio y colocarlo en el body
+            const divImpresion = document.createElement('div');
+            divImpresion.id = 'contenedorImpresionDirecta';
+            divImpresion.innerHTML = areaOriginal.innerHTML;
+            document.body.appendChild(divImpresion);
+
+            // 2. Disparar el diálogo de impresión
             window.print();
+
+            // 3. Remover el clon una vez terminado o cancelado el diálogo
+            document.body.removeChild(divImpresion);
         }
 
         function aplicarFiltrosAvanzados() {
@@ -1512,7 +1569,7 @@
                                 <span class="text-[10px] text-slate-500">Subido por: <strong>${c.subido_por || 'RRHH'}</strong></span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <a href="${c.archivo_base64}" download="${c.nombre_archivo}" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1">
+                                <a href="${c.archivo_base64}" download="${c.nombre_archivo}" class="bg-blue-700 hover:bg-blue-800 text-white font-bold rounded text-[10px] px-2.5 py-1 flex items-center gap-1">
                                     <i class="fa-solid fa-download"></i> Descargar
                                 </a>
                                 ${btnBorrarHTML}
@@ -1792,13 +1849,11 @@
             if (!trabajadorActual || !usuarioSesion || usuarioSesion.rol !== 'ADMINISTRADOR') return;
             const confirmacion = confirm(`⚠️ CONFIRMACIÓN DE SEGURIDAD:\n¿Está seguro de ELIMINAR permanentemente el historial de vacaciones del periodo ${ano} para ${trabajadorActual.nombre_completo}?`);
             if (confirmacion) {
-                // 1. Limpiar memoria local
                 KARDEX_MEMORIA[trabajadorActual.id] = KARDEX_MEMORIA[trabajadorActual.id].filter(k => k.periodo_ano !== ano);
                 guardarStorage();
 
                 const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
 
-                // 2. Ejecutar borrado exacto en Supabase por ID de trabajador o clave compuesta
                 try {
                     await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?cur_id_periodo=eq.${curIdPeriodo}`, {
                         method: "DELETE",
@@ -1875,7 +1930,6 @@
             const det = document.getElementById('kardexFechasDetalle').value.trim();
             const usrActual = usuarioSesion ? usuarioSesion.username : "RRHH";
 
-            // --- VALIDACIÓN ESTRICTA: RESTRICCIÓN DE 4 DOMINGOS PARA EL ÚLTIMO TRAMO ---
             if (pend === 0) {
                 let domingosTotalesAcumulados = 0;
                 const matchesDomingos = det.match(/Incluye (\d+) domingos?/g);
