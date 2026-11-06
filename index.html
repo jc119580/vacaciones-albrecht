@@ -792,15 +792,20 @@
 
         let TRABAJADORES_BASE = JSON.parse(localStorage.getItem("ALBRECHT_TRABAJADORES")) || MAESTRO_INICIAL;
         let KARDEX_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_KARDEX")) || {};
-        let CONVENIOS_MEMORIA = JSON.parse(localStorage.getItem("ALBRECHT_CONVENIOS")) || {};
+        let CONVENIOS_MEMORIA = {};
         let anoEdicionModal = ANO_ACTUAL;
         let anoConvenioAdjuntar = ANO_ACTUAL;
 
+        // FUNCIÓN DE ALMACENAMIENTO LOCAL PROTEGIDA CONTRA CUOTAS DE 5MB
         function guardarStorage() {
-            localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
-            localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
-            localStorage.setItem("ALBRECHT_CONVENIOS", JSON.stringify(CONVENIOS_MEMORIA));
-            localStorage.setItem("ALBRECHT_USUARIOS", JSON.stringify(USUARIOS_SISTEMA));
+            try {
+                localStorage.setItem("ALBRECHT_TRABAJADORES", JSON.stringify(TRABAJADORES_BASE));
+                localStorage.setItem("ALBRECHT_KARDEX", JSON.stringify(KARDEX_MEMORIA));
+                localStorage.setItem("ALBRECHT_USUARIOS", JSON.stringify(USUARIOS_SISTEMA));
+                // No guardamos ALBRECHT_CONVENIOS para no agotar la cuota del navegador
+            } catch (e) {
+                console.warn("Límite de memoria local alcanzado. Continuando en memoria activa sin interrumpir.");
+            }
         }
 
         let usuarioSesion = null;
@@ -939,9 +944,9 @@
             btn.disabled = false;
 
             if (exito) {
-                alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos están sincronizados con la Base de Datos Nube.");
+                alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos están sincronizados en tiempo real con la Nube.");
             } else {
-                alert("⚠️ Se presentaron dificultades para sincronizar completamente con la Nube. Se cargaron los datos locales disponibles.");
+                alert("⚠️ Se presentaron dificultades para conectar con Supabase. Se cargaron los datos locales disponibles.");
             }
         }
 
@@ -1012,7 +1017,7 @@
                 if (trabajadorActual) cargarTrabajador(trabajadorActual.id);
                 return ok;
             } catch (err) {
-                console.warn("Conexión con Supabase no disponible. Cargando desde memoria local.");
+                console.warn("Cargando desde memoria local.");
                 return false;
             }
         }
@@ -1524,7 +1529,6 @@
 
                 if (!CONVENIOS_MEMORIA[trabajadorActual.id]) CONVENIOS_MEMORIA[trabajadorActual.id] = [];
                 CONVENIOS_MEMORIA[trabajadorActual.id].push(objetoConvenio);
-                guardarStorage();
 
                 btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Subir a la Nube`;
                 btn.disabled = false;
@@ -1615,7 +1619,6 @@
                     } else {
                         CONVENIOS_MEMORIA[trabajadorActual.id] = CONVENIOS_MEMORIA[trabajadorActual.id].filter(c => String(c.id) !== idStr);
                     }
-                    guardarStorage();
                 }
 
                 if (!idStr.startsWith("idx_")) {
@@ -2023,7 +2026,7 @@
             };
 
             try {
-                // Verificar si ya existe en Supabase por id compuesto o trabajador/año
+                // Verificar si ya existe en Supabase
                 const respCheck = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
                     headers: getHeaders(false)
                 });
