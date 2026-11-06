@@ -764,20 +764,20 @@
     <!-- SCRIPT PRINCIPAL INTEGRADO -->
     <script>
         const SUPABASE_BASE_URL = "https://zywtktpsvwybhyfpwmyv.supabase.co/rest/v1";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MzIyMCwiZXhwIjoyMTA0MDE5MjIwfQ.7kSOGOKp77eHM3ZzF8WaxtdlF7HoOkwpnhZlw_iOfyA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5d3RrdHBzdnd5Ymh5ZnB3bXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDMyMjAsImV4cCI6MjEwNDAxOTIyMH0.EDBNnxQOpeM53PWp7XX4CVypKuRogkg7eZFCD7RvU5Y";
 
         const ANO_ACTUAL = new Date().getFullYear();
         const ANO_SIGUIENTE = ANO_ACTUAL + 1;
 
         let USUARIOS_SISTEMA = JSON.parse(localStorage.getItem("ALBRECHT_USUARIOS")) || [
-            { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Jefatura de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
-            { id: 2, username: "RRHH_2", password_hash: "Albrecht.2026", nombre_completo: "Auxiliar de RRHH 2", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
-            { id: 3, username: "RRHH_3", password_hash: "Albrecht.2026", nombre_completo: "Auxiliar de RRHH 3", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
+            { id: 1, username: "RRHH", password_hash: "Albrecht.2026", nombre_completo: "Administración de Recursos Humanos", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
+            { id: 2, username: "RRHH_2", password_hash: "Albrecht.2026jc", nombre_completo: "Auxiliar de RRHH 2", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
+            { id: 3, username: "RRHH_3", password_hash: "18179666Ale", nombre_completo: "Auxiliar de RRHH 3", rol: "ADMINISTRADOR", cargo_jefatura: "Oficina de Personal" },
             { id: 4, username: "ENFERMERIA", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Enfermería", rol: "VISOR", cargo_jefatura: "Departamento de Enfermería" },
             { id: 5, username: "JADYT", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Ayuda al Diagnóstico", rol: "VISOR", cargo_jefatura: "Departamento de JADYT" },
             { id: 6, username: "JMQX", password_hash: "Jefatura2026", nombre_completo: "Jefatura Médico Quirúrgica", rol: "VISOR", cargo_jefatura: "Departamento de JMQX" },
             { id: 7, username: "PLANEAMIENTO", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Planeamiento", rol: "VISOR", cargo_jefatura: "Oficina de Planeamiento" },
-            { id: 8, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "Unidad de Admisión" }
+            { id: 8, username: "ADMISION", password_hash: "Jefatura2026", nombre_completo: "Jefatura de Admisión", rol: "VISOR", cargo_jefatura: "Unidad de Admisión" }
         ];
 
         const MAESTRO_INICIAL = [
@@ -814,7 +814,7 @@
                 "Content-Type": "application/json"
             };
             if (esEscritura) {
-                h["Prefer"] = "resolution=merge-duplicates,return=representation";
+                h["Prefer"] = "return=representation";
             }
             return h;
         }
@@ -933,19 +933,27 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
             btn.disabled = true;
 
-            await descargarDatosSupabase();
+            const exito = await descargarDatosSupabase();
 
             btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ☁️ Forzar Sincro Nube`;
             btn.disabled = false;
-            alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos están sincronizados en la Nube.");
+
+            if (exito) {
+                alert("🎉 ¡SINCRO COMPLETA!\nTodos los datos están sincronizados con la Base de Datos Nube.");
+            } else {
+                alert("⚠️ Se presentaron dificultades para sincronizar completamente con la Nube. Se cargaron los datos locales disponibles.");
+            }
         }
 
         async function descargarDatosSupabase() {
+            let ok = true;
             try {
                 const respT = await fetch(`${SUPABASE_BASE_URL}/trabajadores?select=*`, { headers: getHeaders(false) });
                 if (respT.ok) {
                     const dataT = await respT.json();
                     if (dataT && dataT.length > 0) TRABAJADORES_BASE = dataT;
+                } else {
+                    ok = false;
                 }
 
                 const respK = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?select=*`, { headers: getHeaders(false) });
@@ -954,16 +962,19 @@
                     if (dataK && dataK.length > 0) {
                         KARDEX_MEMORIA = {};
                         dataK.forEach(k => {
-                            if (!KARDEX_MEMORIA[k.trabajador_id]) KARDEX_MEMORIA[k.trabajador_id] = [];
-                            KARDEX_MEMORIA[k.trabajador_id].push({
+                            const tId = String(k.trabajador_id);
+                            if (!KARDEX_MEMORIA[tId]) KARDEX_MEMORIA[tId] = [];
+                            KARDEX_MEMORIA[tId].push({
                                 periodo_ano: parseInt(k.periodo_ano),
-                                dias_pendientes: parseInt(k.dias_pendientes),
+                                dias_pendientes: parseInt(k.dias_pendientes ?? k.saldo_pendiente ?? 30),
                                 detalle_fechas: k.historial_tramos || k.detalle_fechas || '',
                                 registrado_por: k.registrado_por || 'RRHH',
                                 modificado_por: k.modificado_por || 'RRHH'
                             });
                         });
                     }
+                } else {
+                    ok = false;
                 }
 
                 const respC = await fetch(`${SUPABASE_BASE_URL}/convenios_vacaciones?select=*`, { headers: getHeaders(false) });
@@ -972,10 +983,11 @@
                     if (dataC) {
                         CONVENIOS_MEMORIA = {};
                         dataC.forEach(c => {
-                            if (!CONVENIOS_MEMORIA[c.trabajador_id]) CONVENIOS_MEMORIA[c.trabajador_id] = [];
-                            CONVENIOS_MEMORIA[c.trabajador_id].push({
+                            const tId = String(c.trabajador_id);
+                            if (!CONVENIOS_MEMORIA[tId]) CONVENIOS_MEMORIA[tId] = [];
+                            CONVENIOS_MEMORIA[tId].push({
                                 id: c.id,
-                                trabajador_id: String(c.trabajador_id),
+                                trabajador_id: tId,
                                 periodo_ano: parseInt(c.periodo_ano),
                                 nombre_archivo: c.nombre_archivo,
                                 tipo_archivo: c.tipo_archivo,
@@ -984,6 +996,8 @@
                             });
                         });
                     }
+                } else {
+                    ok = false;
                 }
 
                 const respU = await fetch(`${SUPABASE_BASE_URL}/usuarios?select=*`, { headers: getHeaders(false) });
@@ -996,8 +1010,10 @@
                 listaTrabajadores = TRABAJADORES_BASE;
                 renderDesplegable(listaTrabajadores);
                 if (trabajadorActual) cargarTrabajador(trabajadorActual.id);
+                return ok;
             } catch (err) {
-                console.log("Cargando desde memoria local.");
+                console.warn("Conexión con Supabase no disponible. Cargando desde memoria local.");
+                return false;
             }
         }
 
@@ -1194,21 +1210,17 @@
             document.getElementById('modalReporte').classList.add('hidden');
         }
 
-        // FUNCIÓN DE IMPRESIÓN DIRECTA SIN CONFLICTOS DE DISPLAY NI MODALES
         function imprimirReporte() {
             const areaOriginal = document.getElementById('areaImpresionReporte');
             if (!areaOriginal) return;
 
-            // 1. Crear clon limpio y colocarlo en el body
             const divImpresion = document.createElement('div');
             divImpresion.id = 'contenedorImpresionDirecta';
             divImpresion.innerHTML = areaOriginal.innerHTML;
             document.body.appendChild(divImpresion);
 
-            // 2. Disparar el diálogo de impresión
             window.print();
 
-            // 3. Remover el clon una vez terminado o cancelado el diálogo
             document.body.removeChild(divImpresion);
         }
 
@@ -1682,22 +1694,41 @@
 
             const curIdPeriodo = `${trabajadorActual.id}_${anoEdicionModal}`;
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=cur_id_periodo`, {
-                method: "POST",
-                headers: getHeaders(true),
-                body: JSON.stringify({
-                    trabajador_id: String(trabajadorActual.id),
-                    periodo_ano: String(anoEdicionModal),
-                    dias_computados: 30,
-                    dias_gozados: totalDiasGozadosNuevos,
-                    dias_pendientes: parseInt(k.dias_pendientes),
-                    saldo_pendiente: parseInt(k.dias_pendientes),
-                    historial_tramos: String(k.detalle_fechas || ''),
-                    detalle_fechas: String(k.detalle_fechas || ''),
-                    cur_id_periodo: curIdPeriodo,
-                    modificado_por: usrActual
-                })
-            }).catch(e => console.log(e));
+            const payload = {
+                trabajador_id: String(trabajadorActual.id),
+                periodo_ano: parseInt(anoEdicionModal),
+                dias_computados: 30,
+                dias_gozados: totalDiasGozadosNuevos,
+                dias_pendientes: parseInt(k.dias_pendientes),
+                saldo_pendiente: parseInt(k.dias_pendientes),
+                historial_tramos: String(k.detalle_fechas || ''),
+                detalle_fechas: String(k.detalle_fechas || ''),
+                cur_id_periodo: curIdPeriodo,
+                modificado_por: usrActual
+            };
+
+            try {
+                const check = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${anoEdicionModal}`, {
+                    headers: getHeaders(false)
+                });
+                const arr = check.ok ? await check.json() : [];
+
+                if (arr && arr.length > 0) {
+                    await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?id=eq.${arr[0].id}`, {
+                        method: "PATCH",
+                        headers: getHeaders(false),
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                        method: "POST",
+                        headers: getHeaders(true),
+                        body: JSON.stringify(payload)
+                    });
+                }
+            } catch (e) {
+                console.log(e);
+            }
 
             alert(`¡Tramo eliminado y saldo recalculado con éxito por [${usrActual}]!`);
             abrirModalTramoAno(anoEdicionModal);
@@ -1946,6 +1977,11 @@
                 }
             }
 
+            const btn = document.getElementById('btnGuardarTramo');
+            const textoOriginalBtn = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
+            btn.disabled = true;
+
             if (!KARDEX_MEMORIA[trabajadorActual.id]) KARDEX_MEMORIA[trabajadorActual.id] = [];
             
             const idx = KARDEX_MEMORIA[trabajadorActual.id].findIndex(k => k.periodo_ano === ano);
@@ -1954,16 +1990,16 @@
                 KARDEX_MEMORIA[trabajadorActual.id][idx] = { 
                     periodo_ano: ano, 
                     dias_pendientes: pend, 
-                    detalle_fechas: det,
-                    registrado_por: regPrevio.registrado_por || usrActual,
+                    detalle_fechas: det, 
+                    registrado_por: regPrevio.registrado_por || usrActual, 
                     modificado_por: usrActual 
                 };
             } else {
                 KARDEX_MEMORIA[trabajadorActual.id].push({ 
                     periodo_ano: ano, 
                     dias_pendientes: pend, 
-                    detalle_fechas: det,
-                    registrado_por: usrActual,
+                    detalle_fechas: det, 
+                    registrado_por: usrActual, 
                     modificado_por: usrActual 
                 });
             }
@@ -1973,25 +2009,67 @@
             const curIdPeriodo = `${trabajadorActual.id}_${ano}`;
             const diasGozadosNuevos = 30 - pend;
 
-            await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?on_conflict=cur_id_periodo`, {
-                method: "POST",
-                headers: getHeaders(true),
-                body: JSON.stringify({
-                    trabajador_id: String(trabajadorActual.id),
-                    periodo_ano: String(ano),
-                    dias_computados: 30,
-                    dias_gozados: diasGozadosNuevos,
-                    dias_pendientes: parseInt(pend),
-                    saldo_pendiente: parseInt(pend),
-                    historial_tramos: String(det || ''),
-                    detalle_fechas: String(det || ''),
-                    cur_id_periodo: curIdPeriodo,
-                    registrado_por: usrActual,
-                    modificado_por: usrActual
-                })
-            }).catch(e => console.log(e));
+            const datosGuardar = {
+                trabajador_id: String(trabajadorActual.id),
+                periodo_ano: parseInt(ano),
+                dias_computados: 30,
+                dias_gozados: diasGozadosNuevos,
+                dias_pendientes: parseInt(pend),
+                saldo_pendiente: parseInt(pend),
+                historial_tramos: String(det || ''),
+                detalle_fechas: String(det || ''),
+                cur_id_periodo: curIdPeriodo,
+                modificado_por: usrActual
+            };
 
-            alert(`¡Kardex del periodo ${ano} guardado y sincronizado automáticamente en la Nube por [${usrActual}]!`);
+            try {
+                // Verificar si ya existe en Supabase por id compuesto o trabajador/año
+                const respCheck = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?trabajador_id=eq.${trabajadorActual.id}&periodo_ano=eq.${ano}`, {
+                    headers: getHeaders(false)
+                });
+                
+                let existeEnSupabase = false;
+                let filaId = null;
+
+                if (respCheck.ok) {
+                    const filas = await respCheck.json();
+                    if (filas && filas.length > 0) {
+                        existeEnSupabase = true;
+                        filaId = filas[0].id;
+                    }
+                }
+
+                let respOperacion;
+                if (existeEnSupabase && filaId) {
+                    respOperacion = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones?id=eq.${filaId}`, {
+                        method: "PATCH",
+                        headers: getHeaders(false),
+                        body: JSON.stringify(datosGuardar)
+                    });
+                } else {
+                    datosGuardar.registrado_por = usrActual;
+                    respOperacion = await fetch(`${SUPABASE_BASE_URL}/kardex_vacaciones`, {
+                        method: "POST",
+                        headers: getHeaders(true),
+                        body: JSON.stringify(datosGuardar)
+                    });
+                }
+
+                if (!respOperacion.ok) {
+                    const errTxt = await respOperacion.text();
+                    console.error("Error al persistir en Supabase:", errTxt);
+                    alert(`⚠️ Aviso: Se guardó en la memoria local del navegador, pero Supabase respondió con error: ${respOperacion.status}\nVerifique que RLS esté deshabilitado en la tabla 'kardex_vacaciones'.`);
+                } else {
+                    alert(`¡Kardex del periodo ${ano} guardado y sincronizado automáticamente en la Nube por [${usrActual}]!`);
+                }
+            } catch (e) {
+                console.error("Fallo de red:", e);
+                alert("Guardado localmente. La conexión con la Nube falló (revisar conexión de red).");
+            }
+
+            btn.innerHTML = textoOriginalBtn;
+            btn.disabled = false;
+
             document.getElementById('fechaInicio').value = '';
             document.getElementById('fechaFin').value = '';
             document.getElementById('lblDiasCalculados').innerText = '0 Días';
@@ -2026,7 +2104,7 @@
             guardarStorage();
 
             try {
-                await fetch(`${SUPABASE_BASE_URL}/trabajadores?on_conflict=id`, {
+                const resp = await fetch(`${SUPABASE_BASE_URL}/trabajadores`, {
                     method: "POST",
                     headers: getHeaders(true),
                     body: JSON.stringify({
@@ -2042,6 +2120,10 @@
                         modificado_por: usrActual
                     })
                 });
+
+                if (!resp.ok) {
+                    console.warn("Fallo guardado trabajador en Supabase:", await resp.text());
+                }
             } catch (err) {
                 console.log(err);
             }
